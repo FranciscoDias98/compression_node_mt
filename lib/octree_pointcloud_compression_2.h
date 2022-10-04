@@ -320,7 +320,7 @@ namespace pcl
                 if (i_frame_){
                     auto start_serializeTree = chrono::high_resolution_clock::now();
                     // i-frame encoding - encode tree structure without referencing previous buffer
-                    this->serializeTree2 (binary_tree_data_vector_, false);
+                    this->serializeTree (binary_tree_data_vector_, false);
                     printf("------ Done serializeTree i-frame encoding ------ \n ");
                     auto stop_serializeTree = chrono::high_resolution_clock::now();
                     auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);
@@ -330,7 +330,7 @@ namespace pcl
                 else{
                     // p-frame encoding - XOR encoded tree structure
                     auto start_serializeTree = chrono::high_resolution_clock::now();
-                    this->serializeTree2 (binary_tree_data_vector_, true); // change to serializeTree2 <-----
+                    this->serializeTree (binary_tree_data_vector_, true); // change to serializeTree2 <-----
                     printf("------ Done serializeTree  p-frame encoding - XOR ------ \n ");
                     auto stop_serializeTree = chrono::high_resolution_clock::now();
                     auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);

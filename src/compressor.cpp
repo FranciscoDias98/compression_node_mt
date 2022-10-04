@@ -777,9 +777,9 @@ void Alfa_Pc_Compress::run_worker_thread(int thread_number,pcl::PointCloud<pcl::
 
 
             if(PointCloudEncoder->i_frame_){
-                PointCloudEncoder->serializeTree2(PointCloudEncoder->binary_tree_data_vector_,false);
+                PointCloudEncoder->serializeTree(PointCloudEncoder->binary_tree_data_vector_,false);
             }else{
-                PointCloudEncoder->serializeTree2(PointCloudEncoder->binary_tree_data_vector_,true);
+                PointCloudEncoder->serializeTree(PointCloudEncoder->binary_tree_data_vector_,true);
             }
 
 
@@ -827,9 +827,9 @@ void Alfa_Pc_Compress::run_worker_thread(int thread_number,pcl::PointCloud<pcl::
 
 
                  if(PointCloudEncoder1->i_frame_){
-                     PointCloudEncoder1->serializeTree2(PointCloudEncoder1->binary_tree_data_vector_,false);
+                     PointCloudEncoder1->serializeTree(PointCloudEncoder1->binary_tree_data_vector_,false);
                  }else{
-                     PointCloudEncoder1->serializeTree2(PointCloudEncoder1->binary_tree_data_vector_,true);
+                     PointCloudEncoder1->serializeTree(PointCloudEncoder1->binary_tree_data_vector_,true);
                  }
 
              }
@@ -1032,9 +1032,9 @@ void Alfa_Pc_Compress::compress_octant(pcl::io::OctreePointCloudCompression<pcl:
 
 
         if( point_cloud_encoder->i_frame_){
-             point_cloud_encoder->serializeTree2( point_cloud_encoder->binary_tree_data_vector_,false);
+             point_cloud_encoder->serializeTree( point_cloud_encoder->binary_tree_data_vector_,false);
         }else{
-             point_cloud_encoder->serializeTree2( point_cloud_encoder->binary_tree_data_vector_,true);
+             point_cloud_encoder->serializeTree( point_cloud_encoder->binary_tree_data_vector_,true);
         }
 
 
@@ -1672,9 +1672,9 @@ void Alfa_Pc_Compress::compress_octant_0()
 
 
         if( PointCloudEncoder_0->i_frame_){
-            PointCloudEncoder_0->serializeTree2( PointCloudEncoder_0->binary_tree_data_vector_,false);
+            PointCloudEncoder_0->serializeTree( PointCloudEncoder_0->binary_tree_data_vector_,false);
         }else{
-            PointCloudEncoder_0->serializeTree2( PointCloudEncoder_0->binary_tree_data_vector_,true);
+            PointCloudEncoder_0->serializeTree( PointCloudEncoder_0->binary_tree_data_vector_,true);
         }
 
 
@@ -1727,9 +1727,9 @@ void Alfa_Pc_Compress::compress_octant_1()
 
 
         if( PointCloudEncoder_1->i_frame_){
-            PointCloudEncoder_1->serializeTree2( PointCloudEncoder_1->binary_tree_data_vector_,false);
+            PointCloudEncoder_1->serializeTree( PointCloudEncoder_1->binary_tree_data_vector_,false);
         }else{
-            PointCloudEncoder_1->serializeTree2( PointCloudEncoder_1->binary_tree_data_vector_,true);
+            PointCloudEncoder_1->serializeTree( PointCloudEncoder_1->binary_tree_data_vector_,true);
         }
 
 
@@ -1782,9 +1782,9 @@ void Alfa_Pc_Compress::compress_octant_2()
 
 
         if( PointCloudEncoder_2->i_frame_){
-            PointCloudEncoder_2->serializeTree2( PointCloudEncoder_2->binary_tree_data_vector_,false);
+            PointCloudEncoder_2->serializeTree( PointCloudEncoder_2->binary_tree_data_vector_,false);
         }else{
-            PointCloudEncoder_2->serializeTree2( PointCloudEncoder_2->binary_tree_data_vector_,true);
+            PointCloudEncoder_2->serializeTree( PointCloudEncoder_2->binary_tree_data_vector_,true);
         }
 
 
@@ -1837,9 +1837,9 @@ void Alfa_Pc_Compress::compress_octant_3()
 
 
         if( PointCloudEncoder_3->i_frame_){
-            PointCloudEncoder_3->serializeTree2( PointCloudEncoder_3->binary_tree_data_vector_,false);
+            PointCloudEncoder_3->serializeTree( PointCloudEncoder_3->binary_tree_data_vector_,false);
         }else{
-            PointCloudEncoder_3->serializeTree2( PointCloudEncoder_3->binary_tree_data_vector_,true);
+            PointCloudEncoder_3->serializeTree( PointCloudEncoder_3->binary_tree_data_vector_,true);
         }
 
 
@@ -1893,9 +1893,9 @@ void Alfa_Pc_Compress::compress_octant_4()
 
 
         if( PointCloudEncoder_4->i_frame_){
-            PointCloudEncoder_4->serializeTree2( PointCloudEncoder_4->binary_tree_data_vector_,false);
+            PointCloudEncoder_4->serializeTree( PointCloudEncoder_4->binary_tree_data_vector_,false);
         }else{
-            PointCloudEncoder_4->serializeTree2( PointCloudEncoder_4->binary_tree_data_vector_,true);
+            PointCloudEncoder_4->serializeTree( PointCloudEncoder_4->binary_tree_data_vector_,true);
         }
 
 
@@ -1948,9 +1948,9 @@ void Alfa_Pc_Compress::compress_octant_5()
 
 
         if( PointCloudEncoder_5->i_frame_){
-            PointCloudEncoder_5->serializeTree2( PointCloudEncoder_5->binary_tree_data_vector_,false);
+            PointCloudEncoder_5->serializeTree( PointCloudEncoder_5->binary_tree_data_vector_,false);
         }else{
-            PointCloudEncoder_5->serializeTree2( PointCloudEncoder_5->binary_tree_data_vector_,true);
+            PointCloudEncoder_5->serializeTree( PointCloudEncoder_5->binary_tree_data_vector_,true);
         }
 
 
@@ -2004,9 +2004,9 @@ void Alfa_Pc_Compress::compress_octant_6()
 
 
         if( PointCloudEncoder_6->i_frame_){
-            PointCloudEncoder_6->serializeTree2( PointCloudEncoder_6->binary_tree_data_vector_,false);
+            PointCloudEncoder_6->serializeTree( PointCloudEncoder_6->binary_tree_data_vector_,false);
         }else{
-            PointCloudEncoder_6->serializeTree2( PointCloudEncoder_6->binary_tree_data_vector_,true);
+            PointCloudEncoder_6->serializeTree( PointCloudEncoder_6->binary_tree_data_vector_,true);
         }
 
 
@@ -2060,9 +2060,9 @@ void Alfa_Pc_Compress::compress_octant_7()
 
 
         if( PointCloudEncoder_7->i_frame_){
-            PointCloudEncoder_7->serializeTree2( PointCloudEncoder_7->binary_tree_data_vector_,false);
+            PointCloudEncoder_7->serializeTree( PointCloudEncoder_7->binary_tree_data_vector_,false);
         }else{
-            PointCloudEncoder_7->serializeTree2( PointCloudEncoder_7->binary_tree_data_vector_,true);
+            PointCloudEncoder_7->serializeTree( PointCloudEncoder_7->binary_tree_data_vector_,true);
         }
 
 
