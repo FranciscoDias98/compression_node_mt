@@ -20,6 +20,8 @@ float size_compressed_test =0;
 float size_original_test =0;
 float points_second = 0;
 
+bool oct_0,oct_1,oct_2,oct_3,oct_4,oct_5,oct_6,oct_7;
+
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder1;
 
@@ -36,15 +38,6 @@ pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder_7;
 
 vector<pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>> octants_compressor_vec;
 
-
-//pcl::PointCloud<pcl::PointXYZRGB>* octant_0;
-//pcl::PointCloud<pcl::PointXYZRGB>* octant_1;
-//pcl::PointCloud<pcl::PointXYZRGB>* octant_2;
-//pcl::PointCloud<pcl::PointXYZRGB>* octant_3;
-//pcl::PointCloud<pcl::PointXYZRGB>* octant_4;
-//pcl::PointCloud<pcl::PointXYZRGB>* octant_5;
-//pcl::PointCloud<pcl::PointXYZRGB>* octant_6;
-//pcl::PointCloud<pcl::PointXYZRGB>* octant_7;
 
 bool hw;
 
@@ -575,7 +568,6 @@ void Alfa_Pc_Compress::set_compression_profile()
 void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud, const sensor_msgs::PointCloud2ConstPtr& header)
 {
 
-    vector<char>serialized_octree;
     this->in_cloud = input_cloud;
 
     std::stringstream compressed_data;
@@ -594,8 +586,6 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     if(multi_thread)
     {
         auto start_multi = high_resolution_clock::now();
-
-
 
 
         auto start_divide = high_resolution_clock::now();
@@ -632,8 +622,73 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
             }
         }
 
-        printf("------ Acabei Threads ------ ");
+        printf("------ Acabei Threads ------ \n");
 
+        while(!(oct_0 && oct_1 && oct_2 && oct_3 && oct_4 && oct_5 && oct_6 && oct_7))
+            printf("------ Waiting ------ \n");
+
+        oct_0 = false;
+        oct_1 = false;
+        oct_2 = false;
+        oct_3 = false;
+        oct_4 = false;
+        oct_5 = false;
+        oct_6 = false;
+        oct_7 = false;
+
+
+
+        //write octants information in header
+        my_write_frame_header(compressed_data);
+
+        //merge occupancy_codes off octants
+        auto merge_start = high_resolution_clock::now();
+
+        //std::vector<char> occupancy_codes;
+        //occupancy_codes.insert(occupancy_codes.end(),PointCloudEncoder_0->binary_tree_data_vector_.begin(),PointCloudEncoder_0->binary_tree_data_vector_.end());
+        PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_1->binary_tree_data_vector_.begin(),PointCloudEncoder_1->binary_tree_data_vector_.end());
+        PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_2->binary_tree_data_vector_.begin(),PointCloudEncoder_2->binary_tree_data_vector_.end());
+        PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_3->binary_tree_data_vector_.begin(),PointCloudEncoder_3->binary_tree_data_vector_.end());
+        PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_4->binary_tree_data_vector_.begin(),PointCloudEncoder_4->binary_tree_data_vector_.end());
+        PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_5->binary_tree_data_vector_.begin(),PointCloudEncoder_5->binary_tree_data_vector_.end());
+        PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_6->binary_tree_data_vector_.begin(),PointCloudEncoder_6->binary_tree_data_vector_.end());
+        PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_7->binary_tree_data_vector_.begin(),PointCloudEncoder_7->binary_tree_data_vector_.end());
+
+        //for(int i=0; i<PointCloudEncoder_0->binary_tree_data_vector_.size();i++)
+            //printf("%i --> %x \n",i,PointCloudEncoder_0->binary_tree_data_vector_[i]);
+
+
+        auto merge_stop = high_resolution_clock::now();
+        auto merge_duration = duration_cast<microseconds>(merge_stop - merge_start);
+        ROS_INFO("------ Merge Duration in %ld us ----- ",merge_duration.count());
+
+
+        auto compress_merged_start = high_resolution_clock::now();
+        PointCloudEncoder_0->entropyEncoding(compressed_data);   // Vai ser aqui para mandar para o HW <-----------
+        auto compress_merged_stop = high_resolution_clock::now();
+        auto compress_merged_duration = duration_cast<microseconds>(compress_merged_stop - compress_merged_start);
+        ROS_INFO("------ Compress Merged Duration in %ld us ----- ",compress_merged_duration.count());
+
+        PointCloudEncoder_0->switchBuffers();
+        PointCloudEncoder_0->object_count_ = 0;
+        PointCloudEncoder_1->switchBuffers();
+        PointCloudEncoder_1->object_count_ = 0;
+        PointCloudEncoder_2->switchBuffers();
+        PointCloudEncoder_2->object_count_ = 0;
+        PointCloudEncoder_3->switchBuffers();
+        PointCloudEncoder_3->object_count_ = 0;
+        PointCloudEncoder_4->switchBuffers();
+        PointCloudEncoder_4->object_count_ = 0;
+        PointCloudEncoder_5->switchBuffers();
+        PointCloudEncoder_5->object_count_ = 0;
+        PointCloudEncoder_6->switchBuffers();
+        PointCloudEncoder_6->object_count_ = 0;
+        PointCloudEncoder_7->switchBuffers();
+        PointCloudEncoder_7->object_count_ = 0;
+
+
+
+        //********************************************************************//
         auto stop_multi = high_resolution_clock::now();
         auto duration_multi = duration_cast<milliseconds>(stop_multi - start_multi);
         ROS_INFO("------ Multi Thread Compression in %ld ms ----- ",duration_multi.count());
@@ -646,6 +701,11 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
             tempos_test = 0;
             //exe_time();
         }
+
+        output_compressed.header = header->header;
+        output_compressed.data = compressed_data.str();
+        publish_pointcloud(output_compressed);
+
 
 
 
@@ -711,137 +771,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
 
 
-void Alfa_Pc_Compress::run_worker_thread(int thread_number,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud){
-    std::cout << "//////////////// encodePointCloud_2 TESTE THREADING //////////////////\n";
 
-    for(int i = (input_cloud->size()/number_threads)*thread_number;i<= (input_cloud->size()/number_threads)*(thread_number+1);i++)
-    {
-        pcl::PointXYZRGB point = (*input_cloud)[i];
-
-        //push point to cluster
-        if(thread_number == 0)
-        {
-            mutex_cluster.lock();
-            cluster0->push_back(point);
-            mutex_cluster.unlock();
-
-
-        }else if (thread_number == 1)
-        {
-            mutex_cluster.lock();
-            cluster1->push_back(point);
-            mutex_cluster.unlock();
-        }
-
-    }
-
-
-
-    if(thread_number == 0){
-        std::cout << "Cluster 0 Size: " << cluster1->size()<< std::endl;
-        unsigned char recent_tree_depth = static_cast<unsigned char> (PointCloudEncoder->getTreeDepth ());
-
-        PointCloudEncoder->setInputCloud(cluster0);
-        PointCloudEncoder->addPointsFromInputCloud();
-
-        if(PointCloudEncoder->getLeafCount()>0){
-            PointCloudEncoder->cloud_with_color_ = false;
-            PointCloudEncoder->cloud_with_color_ &=PointCloudEncoder->do_color_encoding_;
-
-            PointCloudEncoder->i_frame_ |= (recent_tree_depth !=  PointCloudEncoder->getTreeDepth ());
-
-            if (PointCloudEncoder->i_frame_counter_++==PointCloudEncoder->i_frame_rate_)
-            {
-                PointCloudEncoder->i_frame_counter_ =0;
-                PointCloudEncoder->i_frame_ = true;
-            }
-
-            PointCloudEncoder->frame_ID_++;
-
-            std::cout << "Thread 0 Frame ID :\n" <<PointCloudEncoder->frame_ID_ <<std::endl;
-
-            if (!PointCloudEncoder->do_voxel_grid_enDecoding_)
-            {
-                PointCloudEncoder->point_count_data_vector_.clear ();
-                PointCloudEncoder->point_count_data_vector_.reserve (cluster0->points.size ());
-            }
-
-            // initialize color encoding
-            PointCloudEncoder->color_coder_.initializeEncoding ();
-            PointCloudEncoder->color_coder_.setPointCount (static_cast<unsigned int> (cluster0->points.size ()));
-            PointCloudEncoder->color_coder_.setVoxelCount (static_cast<unsigned int> (PointCloudEncoder->getLeafCount()));
-
-            // initialize point encoding
-            PointCloudEncoder->point_coder_.initializeEncoding ();
-            PointCloudEncoder->point_coder_.setPointCount (static_cast<unsigned int> (cluster0->points.size ()));
-
-
-            if(PointCloudEncoder->i_frame_){
-                PointCloudEncoder->serializeTree(PointCloudEncoder->binary_tree_data_vector_,false);
-            }else{
-                PointCloudEncoder->serializeTree(PointCloudEncoder->binary_tree_data_vector_,true);
-            }
-
-
-
-        }
-    }else if (thread_number == 1) {
-             std::cout << "Thread 1\n";
-             std::cout << "Cluster 1 Size: " << cluster1->size()<< std::endl;
-
-             unsigned char recent_tree_depth = static_cast<unsigned char> (PointCloudEncoder1->getTreeDepth ());
-
-             PointCloudEncoder1->setInputCloud(cluster1);
-             PointCloudEncoder1->addPointsFromInputCloud();
-
-             if(PointCloudEncoder1->getLeafCount()>0){
-                 PointCloudEncoder1->cloud_with_color_ = false;
-                 PointCloudEncoder1->cloud_with_color_ &=PointCloudEncoder1->do_color_encoding_;
-
-                 PointCloudEncoder1->i_frame_ |= (recent_tree_depth !=  PointCloudEncoder1->getTreeDepth ());
-
-                 if (PointCloudEncoder1->i_frame_counter_++==PointCloudEncoder1->i_frame_rate_)
-                 {
-                     PointCloudEncoder1->i_frame_counter_ =0;
-                     PointCloudEncoder1->i_frame_ = true;
-                 }
-
-                 PointCloudEncoder1->frame_ID_++;
-
-                 std::cout << "Thread 1 Frame ID :\n" <<PointCloudEncoder1->frame_ID_ <<std::endl;
-
-                 if (!PointCloudEncoder1->do_voxel_grid_enDecoding_)
-                 {
-                     PointCloudEncoder1->point_count_data_vector_.clear ();
-                     PointCloudEncoder1->point_count_data_vector_.reserve (cluster1->points.size ());
-                 }
-
-                 // initialize color encoding
-                 PointCloudEncoder1->color_coder_.initializeEncoding ();
-                 PointCloudEncoder1->color_coder_.setPointCount (static_cast<unsigned int> (cluster1->points.size ()));
-                 PointCloudEncoder1->color_coder_.setVoxelCount (static_cast<unsigned int> (PointCloudEncoder1->getLeafCount()));
-
-                 // initialize point encoding
-                 PointCloudEncoder1->point_coder_.initializeEncoding ();
-                 PointCloudEncoder1->point_coder_.setPointCount (static_cast<unsigned int> (cluster1->points.size ()));
-
-
-                 if(PointCloudEncoder1->i_frame_){
-                     PointCloudEncoder1->serializeTree(PointCloudEncoder1->binary_tree_data_vector_,false);
-                 }else{
-                     PointCloudEncoder1->serializeTree(PointCloudEncoder1->binary_tree_data_vector_,true);
-                 }
-
-             }
-
-
-    }
-
-
-
-    /// continuar.....
-
-}
 
 
 
@@ -1073,7 +1003,7 @@ void Alfa_Pc_Compress::print_statistics_octant(pcl::io::OctreePointCloudCompress
 
 
 
-void Alfa_Pc_Compress::run_worker_thread_octants(uint8_t thread_number, pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
+void Alfa_Pc_Compress::run_worker_thread_octants_full(uint8_t thread_number, pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
 {
 
     if(thread_number==0){
@@ -1211,60 +1141,92 @@ void Alfa_Pc_Compress::run_worker_thread_octants(uint8_t thread_number, pcl::Poi
 }
 
 
-
-void Alfa_Pc_Compress::run_worker_thread_odd_even(int thread_number,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
+void Alfa_Pc_Compress::run_worker_thread_octants(uint8_t thread_number, pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
 {
 
-    if(thread_number == 0){ // impar
-        if(input_cloud->header.seq % 2){
-            std::cout << "Thread 0\n";
-            std::cout << "SEQ: \n" << input_cloud->header.seq << std::endl;
-            std::stringstream compressed_data_0;
-            PointCloudEncoder->encodePointCloud_2(in_cloud,compressed_data_0);
+    if(thread_number==0){
 
+        compress_octant_0();
+        octant_0->clear();
+        oct_0 = true;
+        std::cout << "Acabei Thread " << (int)thread_number << "\n";
 
-            output_compressed.data = compressed_data_0.str();
-
-            mutex_compressed_data1.lock();
-            publish_pointcloud(output_compressed);
-            mutex_compressed_data1.unlock();
-
-        }
     }
-    if(thread_number == 1){ // par
-        if(!(input_cloud->header.seq % 2)){
-            std::cout << "Thread 1\n";
-            std::cout << "SEQ: \n" << input_cloud->header.seq % 2 << std::endl;
-            std::stringstream compressed_data_1;
-            PointCloudEncoder1->encodePointCloud_2(in_cloud,compressed_data_1);
+    if(thread_number==1){
 
+        compress_octant_1();
+        octant_1->clear();
+        oct_1 = true;
+        std::cout << "Acabei Thread " << (int)thread_number << "\n";
 
-            output_compressed1.data = compressed_data_1.str();
-            mutex_compressed_data2.lock();
-            publish_pointcloud(output_compressed1);
-            mutex_compressed_data2.unlock();
-
-        }
     }
+    if(thread_number==2){
 
-    // nao funciona ???????? Decoder ?????
+        compress_octant_2();
+        octant_2->clear();
+        oct_2 = true;
+        std::cout << "Acabei Thread " << (int)thread_number << "\n";
+
+    }
+    if(thread_number==3){
+
+        compress_octant_3();
+        octant_3->clear();
+        oct_3 = true;
+        std::cout << "Acabei Thread " << (int)thread_number << "\n";
+
+    }
+    if(thread_number==4){
+
+        compress_octant_4();
+        octant_4->clear();
+        oct_4 = true;
+        std::cout << "Acabei Thread " << (int)thread_number << "\n";
+
+    }
+    if(thread_number==5){
+
+        compress_octant_5();
+        octant_5->clear();
+        oct_5 = true;
+        std::cout << "Acabei Thread " << (int)thread_number << "\n";
+
+    }
+    if(thread_number==6){
+
+        compress_octant_6();
+        octant_6->clear();
+        oct_6 = true;
+        std::cout << "Acabei Thread " << (int)thread_number << "\n";
+
+
+    }
+    if(thread_number==7){
+
+        compress_octant_7();
+        octant_7->clear();
+        oct_7 = true;
+        std::cout << "Acabei Thread " << (int)thread_number << "\n";
+    }
 
 
 
 }
+
+
+
+
 void Alfa_Pc_Compress::my_write_frame_header(ostream &compressed_tree_data_out_arg)
 {
     compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (frame_header_identifier), strlen (frame_header_identifier));
     // encode point cloud header id
-    compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder->frame_ID_), sizeof (PointCloudEncoder->frame_ID_));
+    compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder_0->frame_ID_), sizeof (PointCloudEncoder_0->frame_ID_));
     // encode frame type (I/P-frame)
-    compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder->i_frame_), sizeof (PointCloudEncoder->i_frame_));
+    compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder_0->i_frame_), sizeof (PointCloudEncoder_0->i_frame_));
 
 
-    if(PointCloudEncoder->i_frame_){
+    if(PointCloudEncoder_0->i_frame_){
     // teste stats of encoders //
-
-
 
 
         double min_x, min_y, min_z, max_x, max_y, max_z;
@@ -1272,43 +1234,37 @@ void Alfa_Pc_Compress::my_write_frame_header(ostream &compressed_tree_data_out_a
         unsigned char color_bit_depth;
         double point_resolution;
 
+
+        // ****************** Fazer esta parte em multithreading ??? *************
         double min_x_0, min_y_0, min_z_0, max_x_0, max_y_0, max_z_0;
-        //double octree_resolution_0;
-        //unsigned char color_bit_depth_0;
-        //double point_resolution_0;
-
-
-
-
         double min_x_1, min_y_1, min_z_1, max_x_1, max_y_1, max_z_1;
-        //double octree_resolution_1;
-        //unsigned char color_bit_depth_1;
-        //double point_resolution_1;
+        double min_x_2, min_y_2, min_z_2, max_x_2, max_y_2, max_z_2;
+        double min_x_3, min_y_3, min_z_3, max_x_3, max_y_3, max_z_3;
+        double min_x_4, min_y_4, min_z_4, max_x_4, max_y_4, max_z_4;
+        double min_x_5, min_y_5, min_z_5, max_x_5, max_y_5, max_z_5;
+        double min_x_6, min_y_6, min_z_6, max_x_6, max_y_6, max_z_6;
+        double min_x_7, min_y_7, min_z_7, max_x_7, max_y_7, max_z_7;
 
 
-        octree_resolution = PointCloudEncoder->getResolution ();
-        color_bit_depth  = PointCloudEncoder->color_coder_.getBitDepth ();
-        point_resolution = PointCloudEncoder->point_coder_.getPrecision ();
-        PointCloudEncoder->getBoundingBox (min_x_0, min_y_0, min_z_0, max_x_0, max_y_0, max_z_0);
+        unsigned int size_0,size_1,size_2,size_3,size_4,size_5,size_6,size_7;
+
+        octree_resolution = PointCloudEncoder_0->getResolution ();
+        color_bit_depth  = PointCloudEncoder_0->color_coder_.getBitDepth ();
+        point_resolution = PointCloudEncoder_0->point_coder_.getPrecision ();
 
 
-        //octree_resolution_1 = PointCloudEncoder1->getResolution ();
-        //color_bit_depth_1  = PointCloudEncoder1->color_coder_.getBitDepth ();
-        //point_resolution_1 = PointCloudEncoder1->point_coder_.getPrecision ();
-        PointCloudEncoder1->getBoundingBox (min_x_1, min_y_1, min_z_1, max_x_1, max_y_1, max_z_1);
+        PointCloudEncoder_0->getBoundingBox(min_x_0, min_y_0, min_z_0, max_x_0, max_y_0, max_z_0);
+        PointCloudEncoder_1->getBoundingBox(min_x_1, min_y_1, min_z_1, max_x_1, max_y_1, max_z_1);
+        PointCloudEncoder_2->getBoundingBox(min_x_2, min_y_2, min_z_2, max_x_2, max_y_2, max_z_2);
+        PointCloudEncoder_3->getBoundingBox(min_x_3, min_y_3, min_z_3, max_x_3, max_y_3, max_z_3);
+        PointCloudEncoder_4->getBoundingBox(min_x_4, min_y_4, min_z_4, max_x_4, max_y_4, max_z_4);
+        PointCloudEncoder_5->getBoundingBox(min_x_5, min_y_5, min_z_5, max_x_5, max_y_5, max_z_5);
+        PointCloudEncoder_7->getBoundingBox(min_x_7, min_y_7, min_z_7, max_x_7, max_y_7, max_z_7);
+        PointCloudEncoder_6->getBoundingBox(min_x_6, min_y_6, min_z_6, max_x_6, max_y_6, max_z_6);
 
 
 
-        min_x = (min_x_0 < min_x_1) ? min_x_0 : min_x_1;
-        min_y = (min_y_0 < min_y_1) ? min_y_0 : min_y_1;
-        min_z = (min_z_0 < min_z_1) ? min_z_0 : min_z_1;
-
-        max_x = (max_x_0 > max_x_1) ? max_x_0 : max_x_1;
-        max_y = (max_y_0 > max_y_1) ? max_y_0 : max_y_1;
-        max_z = (max_z_0 > max_z_1) ? max_z_0 : max_z_1;
-
-
-        printf("\n-----Cluster 0 -----\n");
+       /* printf("\n-----Cluster 0 -----\n");
 
         printf("min_x: %f\n",min_x_0);
         printf("min_y: %f\n",min_y_0);
@@ -1332,65 +1288,145 @@ void Alfa_Pc_Compress::my_write_frame_header(ostream &compressed_tree_data_out_a
         printf("min_z: %f\n",min_z);
         printf("max_x: %f\n",max_x);
         printf("max_y: %f\n",max_y);
-        printf("max_z: %f\n",max_z);
+        printf("max_z: %f\n",max_z);*/
 
 
-        if(PointCloudEncoder->do_voxel_grid_enDecoding_)
-            point_count = PointCloudEncoder->getLeafCount() + PointCloudEncoder1->getLeafCount();
-        else
-            point_count = PointCloudEncoder->object_count_ + PointCloudEncoder1->object_count_;
+        if(PointCloudEncoder_0->do_voxel_grid_enDecoding_){
+            point_count_0 = PointCloudEncoder_0->getLeafCount();
+            point_count_1 = PointCloudEncoder_1->getLeafCount();
+            point_count_2 = PointCloudEncoder_2->getLeafCount();
+            point_count_3 = PointCloudEncoder_3->getLeafCount();
+            point_count_4 = PointCloudEncoder_4->getLeafCount();
+            point_count_5 = PointCloudEncoder_5->getLeafCount();
+            point_count_6 = PointCloudEncoder_6->getLeafCount();
+            point_count_7 = PointCloudEncoder_7->getLeafCount();
+
+        }
+        else{
+            point_count_0 = PointCloudEncoder_0->object_count_;
+            point_count_1 = PointCloudEncoder_1->object_count_;
+            point_count_2 = PointCloudEncoder_2->object_count_;
+            point_count_3 = PointCloudEncoder_3->object_count_;
+            point_count_4 = PointCloudEncoder_4->object_count_;
+            point_count_5 = PointCloudEncoder_5->object_count_;
+            point_count_6 = PointCloudEncoder_6->object_count_;
+            point_count_7 = PointCloudEncoder_7->object_count_;
+        }
 
 
-        printf("object_count 0: %d\n",PointCloudEncoder->object_count_);
-        printf("object_count 1: %d\n",PointCloudEncoder1->object_count_);
+        //************** ATÉ AQUI EM MULTI ????? ******************************
 
-        printf("leaf_count 0: %d\n",PointCloudEncoder->getLeafCount());
-        printf("leaf_count 1: %d\n",PointCloudEncoder1->getLeafCount());
 
-        printf("point_count 0: %d\n",PointCloudEncoder->point_count_);
-        printf("point_count 1: %d\n",PointCloudEncoder1->point_count_);
-
-        printf("point_count total: %d\n",point_count);
 
         // encode coding configuration
-        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder->do_voxel_grid_enDecoding_), sizeof (PointCloudEncoder->do_voxel_grid_enDecoding_));
-        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder->cloud_with_color_), sizeof (PointCloudEncoder->cloud_with_color_));
-        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_count), sizeof (point_count));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder_0->do_voxel_grid_enDecoding_), sizeof (PointCloudEncoder_0->do_voxel_grid_enDecoding_));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder_0->cloud_with_color_), sizeof (PointCloudEncoder_0->cloud_with_color_));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_count_0), sizeof (point_count_0));
         compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&octree_resolution), sizeof (octree_resolution));
         compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&color_bit_depth), sizeof (color_bit_depth));
         compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_resolution), sizeof (point_resolution));
 
-        // encode octree bounding box
-        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x), sizeof (min_x));
-        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y), sizeof (min_y));
-        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z), sizeof (min_z));
-        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x), sizeof (max_x));
-        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y), sizeof (max_y));
-        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z), sizeof (max_z));
+        // encode octree bounding box octant_0
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x_0), sizeof (min_x_0));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y_0), sizeof (min_y_0));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z_0), sizeof (min_z_0));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x_0), sizeof (max_x_0));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y_0), sizeof (max_y_0));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z_0), sizeof (max_z_0));
 
+
+        // encode octree bounding box octant_1
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_count_1), sizeof (point_count_1));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x_1), sizeof (min_x_1));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y_1), sizeof (min_y_1));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z_1), sizeof (min_z_1));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x_1), sizeof (max_x_1));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y_1), sizeof (max_y_1));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z_1), sizeof (max_z_1));
+
+
+        // encode octree bounding box octant_2
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_count_2), sizeof (point_count_2));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x_2), sizeof (min_x_2));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y_2), sizeof (min_y_2));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z_2), sizeof (min_z_2));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x_2), sizeof (max_x_2));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y_2), sizeof (max_y_2));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z_2), sizeof (max_z_2));
+
+
+        // encode octree bounding box octant_3
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_count_3), sizeof (point_count_3));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x_3), sizeof (min_x_3));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y_3), sizeof (min_y_3));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z_3), sizeof (min_z_3));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x_3), sizeof (max_x_3));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y_3), sizeof (max_y_3));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z_3), sizeof (max_z_3));
+
+
+        // encode octree bounding box octant_4
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_count_4), sizeof (point_count_4));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x_4), sizeof (min_x_4));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y_4), sizeof (min_y_4));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z_4), sizeof (min_z_4));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x_4), sizeof (max_x_4));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y_4), sizeof (max_y_4));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z_4), sizeof (max_z_4));
+
+
+        // encode octree bounding box octant_5
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_count_5), sizeof (point_count_5));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x_5), sizeof (min_x_5));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y_5), sizeof (min_y_5));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z_5), sizeof (min_z_5));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x_5), sizeof (max_x_5));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y_5), sizeof (max_y_5));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z_5), sizeof (max_z_5));
+
+
+        // encode octree bounding box octant_6
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_count_6), sizeof (point_count_6));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x_6), sizeof (min_x_6));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y_6), sizeof (min_y_6));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z_6), sizeof (min_z_6));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x_6), sizeof (max_x_6));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y_6), sizeof (max_y_6));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z_6), sizeof (max_z_6));
+
+
+        // encode octree bounding box octant_7
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_count_7), sizeof (point_count_7));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x_7), sizeof (min_x_7));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y_7), sizeof (min_y_7));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z_7), sizeof (min_z_7));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x_7), sizeof (max_x_7));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y_7), sizeof (max_y_7));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z_7), sizeof (max_z_7));
+
+
+
+        size_0 = PointCloudEncoder_0->binary_tree_data_vector_.size();
+        size_1 = PointCloudEncoder_1->binary_tree_data_vector_.size();
+        size_2 = PointCloudEncoder_2->binary_tree_data_vector_.size();
+        size_3 = PointCloudEncoder_3->binary_tree_data_vector_.size();
+        size_4 = PointCloudEncoder_4->binary_tree_data_vector_.size();
+        size_5 = PointCloudEncoder_5->binary_tree_data_vector_.size();
+        size_6 = PointCloudEncoder_6->binary_tree_data_vector_.size();
+        size_7 = PointCloudEncoder_7->binary_tree_data_vector_.size();
+
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&size_0), sizeof (size_0));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&size_1), sizeof (size_1));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&size_2), sizeof (size_2));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&size_3), sizeof (size_3));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&size_4), sizeof (size_4));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&size_5), sizeof (size_5));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&size_6), sizeof (size_6));
+        compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&size_7), sizeof (size_7));
 
 
     }
 
-}
-
-void Alfa_Pc_Compress::print_statistics()
-{
-    float bytes_per_XYZ = static_cast<float> (PointCloudEncoder->compressed_point_data_len_) / static_cast<float> (point_count);
-    float bytes_per_color = static_cast<float> (PointCloudEncoder->compressed_color_data_len_) / static_cast<float> (point_count);
-
-    printf("\n*** Point Cloud Encoding Statistics ***\n");
-    printf("Frame ID: %d\n", PointCloudEncoder->frame_ID_);
-    printf("Number of encoded points: %ld\n", point_count);
-    printf ("XYZ compression percentage: %f%%\n", bytes_per_XYZ / (3.0f * sizeof (float)) * 100.0f);
-    printf ("XYZ bytes per point: %f bytes\n", bytes_per_XYZ);
-    printf ("Color compression percentage: %f%%\n", bytes_per_color / (sizeof (int)) * 100.0f);
-    printf ("Color bytes per point: %f bytes\n", bytes_per_color);
-    printf ("Size of uncompressed point cloud: %f kBytes\n", static_cast<float> (point_count) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f);
-    printf ("Size of compressed point cloud: %f kBytes\n", static_cast<float> (PointCloudEncoder->compressed_point_data_len_ + PointCloudEncoder->compressed_color_data_len_) / 1024.0f);
-    printf ("Total bytes per point: %f bytes\n", bytes_per_XYZ + bytes_per_color);
-    printf ("Total compression percentage: %f%%\n", (bytes_per_XYZ + bytes_per_color) / (sizeof (int) + 3.0f * sizeof (float)) * 100.0f);
-    printf ("Compression ratio: %f\n\n", static_cast<float> (sizeof (int) + 3.0f * sizeof (float)) / static_cast<float> (bytes_per_XYZ + bytes_per_color));
 }
 
 
@@ -1490,6 +1526,16 @@ void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure:
 {
     //compression_profile_.octreeResolution = configs.configurations[0].config;
     PointCloudEncoder->setResolution(configs.configurations[0].config);
+
+    PointCloudEncoder_0->setResolution(configs.configurations[0].config);
+    PointCloudEncoder_1->setResolution(configs.configurations[0].config);
+    PointCloudEncoder_2->setResolution(configs.configurations[0].config);
+    PointCloudEncoder_3->setResolution(configs.configurations[0].config);
+    PointCloudEncoder_4->setResolution(configs.configurations[0].config);
+    PointCloudEncoder_5->setResolution(configs.configurations[0].config);
+    PointCloudEncoder_6->setResolution(configs.configurations[0].config);
+    PointCloudEncoder_7->setResolution(configs.configurations[0].config);
+
     multi_thread = configs.configurations[1].config;
     //delete(PointCloudEncoder);
 }
@@ -1653,7 +1699,7 @@ void Alfa_Pc_Compress::compress_octant_0()
 
         PointCloudEncoder_0->frame_ID_++;
 
-        std::cout << "Thread 0 Frame ID :\n" << PointCloudEncoder_0->frame_ID_ <<std::endl;
+        std::cout << "Thread 0 Frame ID :" << PointCloudEncoder_0->frame_ID_ <<std::endl;
 
         if (! PointCloudEncoder_0->do_voxel_grid_enDecoding_)
         {
@@ -1708,7 +1754,7 @@ void Alfa_Pc_Compress::compress_octant_1()
 
         PointCloudEncoder_1->frame_ID_++;
 
-        std::cout << "Thread 0 Frame ID :\n" << PointCloudEncoder_1->frame_ID_ <<std::endl;
+        std::cout << "Thread 1 Frame ID :" << PointCloudEncoder_1->frame_ID_ <<std::endl;
 
         if (! PointCloudEncoder_1->do_voxel_grid_enDecoding_)
         {
@@ -1763,7 +1809,7 @@ void Alfa_Pc_Compress::compress_octant_2()
 
         PointCloudEncoder_2->frame_ID_++;
 
-        std::cout << "Thread 0 Frame ID :\n" << PointCloudEncoder_2->frame_ID_ <<std::endl;
+        std::cout << "Thread 2 Frame ID :" << PointCloudEncoder_2->frame_ID_ <<std::endl;
 
         if (! PointCloudEncoder_2->do_voxel_grid_enDecoding_)
         {
@@ -1818,7 +1864,7 @@ void Alfa_Pc_Compress::compress_octant_3()
 
         PointCloudEncoder_3->frame_ID_++;
 
-        std::cout << "Thread 0 Frame ID :\n" << PointCloudEncoder_3->frame_ID_ <<std::endl;
+        std::cout << "Thread 3 Frame ID :" << PointCloudEncoder_3->frame_ID_ <<std::endl;
 
         if (! PointCloudEncoder_3->do_voxel_grid_enDecoding_)
         {
@@ -1874,7 +1920,7 @@ void Alfa_Pc_Compress::compress_octant_4()
 
         PointCloudEncoder_4->frame_ID_++;
 
-        std::cout << "Thread 0 Frame ID :\n" << PointCloudEncoder_4->frame_ID_ <<std::endl;
+        std::cout << "Thread 4 Frame ID :" << PointCloudEncoder_4->frame_ID_ <<std::endl;
 
         if (! PointCloudEncoder_4->do_voxel_grid_enDecoding_)
         {
@@ -1929,7 +1975,7 @@ void Alfa_Pc_Compress::compress_octant_5()
 
         PointCloudEncoder_5->frame_ID_++;
 
-        std::cout << "Thread 0 Frame ID :\n" << PointCloudEncoder_5->frame_ID_ <<std::endl;
+        std::cout << "Thread 5 Frame ID :" << PointCloudEncoder_5->frame_ID_ <<std::endl;
 
         if (! PointCloudEncoder_5->do_voxel_grid_enDecoding_)
         {
@@ -1985,7 +2031,7 @@ void Alfa_Pc_Compress::compress_octant_6()
 
         PointCloudEncoder_6->frame_ID_++;
 
-        std::cout << "Thread 0 Frame ID :\n" << PointCloudEncoder_6->frame_ID_ <<std::endl;
+        std::cout << "Thread 6 Frame ID :" << PointCloudEncoder_6->frame_ID_ <<std::endl;
 
         if (! PointCloudEncoder_6->do_voxel_grid_enDecoding_)
         {
@@ -2041,7 +2087,7 @@ void Alfa_Pc_Compress::compress_octant_7()
 
         PointCloudEncoder_7->frame_ID_++;
 
-        std::cout << "Thread 0 Frame ID :\n" << PointCloudEncoder_7->frame_ID_ <<std::endl;
+        std::cout << "Thread 7 Frame ID :" << PointCloudEncoder_7->frame_ID_ <<std::endl;
 
         if (! PointCloudEncoder_7->do_voxel_grid_enDecoding_)
         {
@@ -2065,7 +2111,182 @@ void Alfa_Pc_Compress::compress_octant_7()
             PointCloudEncoder_7->serializeTree( PointCloudEncoder_7->binary_tree_data_vector_,true);
         }
 
+         std::cout << "Acebei Serialize 7 \n";
 
 
     }
+}
+
+
+void Alfa_Pc_Compress::run_worker_thread(int thread_number,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud){
+    std::cout << "//////////////// encodePointCloud_2 TESTE THREADING //////////////////\n";
+
+    for(int i = (input_cloud->size()/number_threads)*thread_number;i<= (input_cloud->size()/number_threads)*(thread_number+1);i++)
+    {
+        pcl::PointXYZRGB point = (*input_cloud)[i];
+
+        //push point to cluster
+        if(thread_number == 0)
+        {
+            mutex_cluster.lock();
+            cluster0->push_back(point);
+            mutex_cluster.unlock();
+
+
+        }else if (thread_number == 1)
+        {
+            mutex_cluster.lock();
+            cluster1->push_back(point);
+            mutex_cluster.unlock();
+        }
+
+    }
+
+
+
+    if(thread_number == 0){
+        std::cout << "Cluster 0 Size: " << cluster1->size()<< std::endl;
+        unsigned char recent_tree_depth = static_cast<unsigned char> (PointCloudEncoder->getTreeDepth ());
+
+        PointCloudEncoder->setInputCloud(cluster0);
+        PointCloudEncoder->addPointsFromInputCloud();
+
+        if(PointCloudEncoder->getLeafCount()>0){
+            PointCloudEncoder->cloud_with_color_ = false;
+            PointCloudEncoder->cloud_with_color_ &=PointCloudEncoder->do_color_encoding_;
+
+            PointCloudEncoder->i_frame_ |= (recent_tree_depth !=  PointCloudEncoder->getTreeDepth ());
+
+            if (PointCloudEncoder->i_frame_counter_++==PointCloudEncoder->i_frame_rate_)
+            {
+                PointCloudEncoder->i_frame_counter_ =0;
+                PointCloudEncoder->i_frame_ = true;
+            }
+
+            PointCloudEncoder->frame_ID_++;
+
+            std::cout << "Thread 0 Frame ID :\n" <<PointCloudEncoder->frame_ID_ <<std::endl;
+
+            if (!PointCloudEncoder->do_voxel_grid_enDecoding_)
+            {
+                PointCloudEncoder->point_count_data_vector_.clear ();
+                PointCloudEncoder->point_count_data_vector_.reserve (cluster0->points.size ());
+            }
+
+            // initialize color encoding
+            PointCloudEncoder->color_coder_.initializeEncoding ();
+            PointCloudEncoder->color_coder_.setPointCount (static_cast<unsigned int> (cluster0->points.size ()));
+            PointCloudEncoder->color_coder_.setVoxelCount (static_cast<unsigned int> (PointCloudEncoder->getLeafCount()));
+
+            // initialize point encoding
+            PointCloudEncoder->point_coder_.initializeEncoding ();
+            PointCloudEncoder->point_coder_.setPointCount (static_cast<unsigned int> (cluster0->points.size ()));
+
+
+            if(PointCloudEncoder->i_frame_){
+                PointCloudEncoder->serializeTree(PointCloudEncoder->binary_tree_data_vector_,false);
+            }else{
+                PointCloudEncoder->serializeTree(PointCloudEncoder->binary_tree_data_vector_,true);
+            }
+
+
+
+        }
+    }else if (thread_number == 1) {
+             std::cout << "Thread 1\n";
+             std::cout << "Cluster 1 Size: " << cluster1->size()<< std::endl;
+
+             unsigned char recent_tree_depth = static_cast<unsigned char> (PointCloudEncoder1->getTreeDepth ());
+
+             PointCloudEncoder1->setInputCloud(cluster1);
+             PointCloudEncoder1->addPointsFromInputCloud();
+
+             if(PointCloudEncoder1->getLeafCount()>0){
+                 PointCloudEncoder1->cloud_with_color_ = false;
+                 PointCloudEncoder1->cloud_with_color_ &=PointCloudEncoder1->do_color_encoding_;
+
+                 PointCloudEncoder1->i_frame_ |= (recent_tree_depth !=  PointCloudEncoder1->getTreeDepth ());
+
+                 if (PointCloudEncoder1->i_frame_counter_++==PointCloudEncoder1->i_frame_rate_)
+                 {
+                     PointCloudEncoder1->i_frame_counter_ =0;
+                     PointCloudEncoder1->i_frame_ = true;
+                 }
+
+                 PointCloudEncoder1->frame_ID_++;
+
+                 std::cout << "Thread 1 Frame ID :\n" <<PointCloudEncoder1->frame_ID_ <<std::endl;
+
+                 if (!PointCloudEncoder1->do_voxel_grid_enDecoding_)
+                 {
+                     PointCloudEncoder1->point_count_data_vector_.clear ();
+                     PointCloudEncoder1->point_count_data_vector_.reserve (cluster1->points.size ());
+                 }
+
+                 // initialize color encoding
+                 PointCloudEncoder1->color_coder_.initializeEncoding ();
+                 PointCloudEncoder1->color_coder_.setPointCount (static_cast<unsigned int> (cluster1->points.size ()));
+                 PointCloudEncoder1->color_coder_.setVoxelCount (static_cast<unsigned int> (PointCloudEncoder1->getLeafCount()));
+
+                 // initialize point encoding
+                 PointCloudEncoder1->point_coder_.initializeEncoding ();
+                 PointCloudEncoder1->point_coder_.setPointCount (static_cast<unsigned int> (cluster1->points.size ()));
+
+
+                 if(PointCloudEncoder1->i_frame_){
+                     PointCloudEncoder1->serializeTree(PointCloudEncoder1->binary_tree_data_vector_,false);
+                 }else{
+                     PointCloudEncoder1->serializeTree(PointCloudEncoder1->binary_tree_data_vector_,true);
+                 }
+
+             }
+
+
+    }
+
+
+
+    /// continuar.....
+
+}
+
+void Alfa_Pc_Compress::run_worker_thread_odd_even(int thread_number,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
+{
+
+    if(thread_number == 0){ // impar
+        if(input_cloud->header.seq % 2){
+            std::cout << "Thread 0\n";
+            std::cout << "SEQ: \n" << input_cloud->header.seq << std::endl;
+            std::stringstream compressed_data_0;
+            PointCloudEncoder->encodePointCloud_2(in_cloud,compressed_data_0);
+
+
+            output_compressed.data = compressed_data_0.str();
+
+            mutex_compressed_data1.lock();
+            publish_pointcloud(output_compressed);
+            mutex_compressed_data1.unlock();
+
+        }
+    }
+    if(thread_number == 1){ // par
+        if(!(input_cloud->header.seq % 2)){
+            std::cout << "Thread 1\n";
+            std::cout << "SEQ: \n" << input_cloud->header.seq % 2 << std::endl;
+            std::stringstream compressed_data_1;
+            PointCloudEncoder1->encodePointCloud_2(in_cloud,compressed_data_1);
+
+
+            output_compressed1.data = compressed_data_1.str();
+            mutex_compressed_data2.lock();
+            publish_pointcloud(output_compressed1);
+            mutex_compressed_data2.unlock();
+
+        }
+    }
+
+    // nao funciona ???????? Decoder ?????
+
+
+
 }

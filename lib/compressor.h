@@ -118,7 +118,7 @@ private:
     const char* frame_header_identifier ;
 
     ///////
-    uint64_t point_count;
+    uint64_t point_count_0,point_count_1,point_count_2,point_count_3,point_count_4,point_count_5,point_count_6,point_count_7;
     bool cloud_with_color_;
 
     //multi thread odd/even frames
@@ -126,6 +126,7 @@ private:
 
     //multi thread octants
     void run_worker_thread_octants(uint8_t thread_nummber,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
+    void run_worker_thread_octants_full(uint8_t thread_nummber,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr octant_0,octant_1,octant_2,octant_3,octant_4,octant_5,octant_6,octant_7;
     boost::mutex mux_oct_0,mux_oct_1,mux_oct_2,mux_oct_3,mux_oct_4,mux_oct_5,mux_oct_6,mux_oct_7;
 
