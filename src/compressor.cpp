@@ -637,15 +637,19 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         oct_7 = false;
 
 
-
+        auto write_start = high_resolution_clock::now();
         //write octants information in header
         my_write_frame_header(compressed_data);
+        auto write_stop = high_resolution_clock::now();
+        auto write_duration = duration_cast<milliseconds>(write_stop - write_start);
+        ROS_INFO("------ Write Duration in %ld ms ----- ",write_duration.count());
 
         //merge occupancy_codes off octants
         auto merge_start = high_resolution_clock::now();
 
         //std::vector<char> occupancy_codes;
         //occupancy_codes.insert(occupancy_codes.end(),PointCloudEncoder_0->binary_tree_data_vector_.begin(),PointCloudEncoder_0->binary_tree_data_vector_.end());
+
         PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_1->binary_tree_data_vector_.begin(),PointCloudEncoder_1->binary_tree_data_vector_.end());
         PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_2->binary_tree_data_vector_.begin(),PointCloudEncoder_2->binary_tree_data_vector_.end());
         PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_3->binary_tree_data_vector_.begin(),PointCloudEncoder_3->binary_tree_data_vector_.end());
@@ -658,16 +662,20 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
             //printf("%i --> %x \n",i,PointCloudEncoder_0->binary_tree_data_vector_[i]);
 
 
+
+
+
+
         auto merge_stop = high_resolution_clock::now();
-        auto merge_duration = duration_cast<microseconds>(merge_stop - merge_start);
-        ROS_INFO("------ Merge Duration in %ld us ----- ",merge_duration.count());
+        auto merge_duration = duration_cast<milliseconds>(merge_stop - merge_start);
+        ROS_INFO("------ Merge Duration in %ld ms ----- ",merge_duration.count());
 
 
         auto compress_merged_start = high_resolution_clock::now();
         PointCloudEncoder_0->entropyEncoding(compressed_data);   // Vai ser aqui para mandar para o HW <-----------
         auto compress_merged_stop = high_resolution_clock::now();
-        auto compress_merged_duration = duration_cast<microseconds>(compress_merged_stop - compress_merged_start);
-        ROS_INFO("------ Compress Merged Duration in %ld us ----- ",compress_merged_duration.count());
+        auto compress_merged_duration = duration_cast<milliseconds>(compress_merged_stop - compress_merged_start);
+        ROS_INFO("------ Compress Merged Duration in %ld ms ----- ",compress_merged_duration.count());
 
         PointCloudEncoder_0->switchBuffers();
         PointCloudEncoder_0->object_count_ = 0;
@@ -752,14 +760,6 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     }
 
 
-
-
-
-
-
-
-
-
     auto stop_exe_time = high_resolution_clock::now();
     auto duration_exe_time = duration_cast<milliseconds>(stop_exe_time - start_exe_time);
     ROS_INFO("------ Compressing in %ld ms ----- ",duration_exe_time.count());
@@ -768,8 +768,6 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
     publish_metrics(output_metrics);
 }
-
-
 
 
 
@@ -1237,22 +1235,32 @@ void Alfa_Pc_Compress::run_worker_thread_octants_full(uint8_t thread_number, pcl
 }
 
 
+
+
 void Alfa_Pc_Compress::run_worker_thread_octants(uint8_t thread_number, pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
 {
 
     if(thread_number==0){  
         compress_octant_0();
         octant_0->clear();
-        oct_0 = true;
+
+//        double min_x_0, min_y_0, min_z_0, max_x_0, max_y_0, max_z_0;
+//        PointCloudEncoder_0->getBoundingBox(min_x_0, min_y_0, min_z_0, max_x_0, max_y_0, max_z_0);
+
+
         std::cout << "Acabei Thread " << (int)thread_number << "\n";
+        oct_0 = true;
 
     }
     if(thread_number==1){
 
         compress_octant_1();
         octant_1->clear();
-        oct_1 = true;
+
+//        double min_x_1, min_y_1, min_z_1, max_x_1, max_y_1, max_z_1;
+//        PointCloudEncoder_1->getBoundingBox(min_x_1, min_y_1, min_z_1, max_x_1, max_y_1, max_z_1);
         std::cout << "Acabei Thread " << (int)thread_number << "\n";
+        oct_1 = true;
 
     }
     if(thread_number==2){
