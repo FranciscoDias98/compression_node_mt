@@ -74,6 +74,7 @@ public:
     void divide_in_octants(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud); // faster, checks one point at time
     void divide_in_octants_2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud); // using PCL function, mid axis values, slower
     void divide_in_octants_multi(int thread_number,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
+    void divide_in_octants_test(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
 
     void compress_octant(pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* point_cloud_encoder,pcl::PointCloud<pcl::PointXYZRGB>::Ptr octant);
     void print_statistics_octant(pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* point_cloud_encoder); // print compression statistics
@@ -129,6 +130,8 @@ private:
     void run_worker_thread_octants_full(uint8_t thread_nummber,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr octant_0,octant_1,octant_2,octant_3,octant_4,octant_5,octant_6,octant_7;
     boost::mutex mux_oct_0,mux_oct_1,mux_oct_2,mux_oct_3,mux_oct_4,mux_oct_5,mux_oct_6,mux_oct_7;
+
+    float mid_x,mid_y,mid_z;
 
 
 };

@@ -589,7 +589,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
 
         auto start_divide = high_resolution_clock::now();
-        divide_in_octants(input_cloud);
+        divide_in_octants_test(input_cloud); // <---------------------- Check Speed ?????
         auto stop_divide = high_resolution_clock::now();
         auto duration_divide = duration_cast<milliseconds>(stop_divide - start_divide);
         ROS_INFO("------ Octant Division in %ld ms ----- ",duration_divide.count());
@@ -775,7 +775,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
 
 
-void Alfa_Pc_Compress::divide_in_octants(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
+void Alfa_Pc_Compress::divide_in_octants(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) // Bad Division
 {
     //pcl::PointXYZRGB minPt, maxPt;
     //pcl::getMinMax3D(*input_cloud,minPt,maxPt);
@@ -816,8 +816,92 @@ void Alfa_Pc_Compress::divide_in_octants(pcl::PointCloud<pcl::PointXYZRGB>::Ptr 
     }
 }
 
+void Alfa_Pc_Compress::divide_in_octants_test(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud){ // Funciona. mais rapido que a pcl
 
-void Alfa_Pc_Compress::divide_in_octants_2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
+     pcl::PointXYZRGB minPt, maxPt;
+     minPt.x = 0;
+     minPt.y = 0;
+     minPt.z = 0;
+     maxPt.x = 0;
+     maxPt.y = 0;
+     maxPt.z = 0;
+
+     for(auto &point: *input_cloud){
+         if(point.x <= minPt.x)
+                minPt.x = point.x;
+         if(point.y <= minPt.y)
+                minPt.y = point.y;
+         if(point.z <= minPt.z)
+                minPt.z = point.z;
+         if(point.x >= maxPt.x)
+                maxPt.x = point.x;
+         if(point.y >= maxPt.y)
+                maxPt.y = point.y;
+         if(point.z >= maxPt.z)
+                maxPt.z = point.z;
+     }
+
+
+
+
+     mid_x = (maxPt.x + minPt.x)/2 ;
+     mid_y = (maxPt.y + minPt.y)/2 ;
+     mid_z = (maxPt.z + minPt.z)/2 ;
+
+     printf("%f \n",maxPt.x);
+     printf("%f \n",maxPt.y);
+     printf("%f \n",maxPt.z);
+     printf("%f \n",minPt.x);
+     printf("%f \n",minPt.y);
+     printf("%f \n",minPt.z);
+
+     printf("%f \n",mid_x);
+     printf("%f \n",mid_y);
+     printf("%f \n",mid_z);
+
+
+     // for more exe. time savings, try multithreading in division
+
+     for (int i=0;i<input_cloud->size();i++) {
+         pcl::PointXYZRGB point = (*input_cloud)[i];
+
+         if(point.x <= mid_x){
+             if(point.y <= mid_y){
+                 if(point.z <= mid_z)
+                     octant_0->push_back(point);
+                 else
+                     octant_1->push_back(point);
+             }
+             else {
+                 if(point.z <= mid_z)
+                     octant_2->push_back(point);
+                 else
+                     octant_3->push_back(point);
+             }
+         }
+         else {
+             if(point.y <= mid_y){
+                 if(point.z <= mid_z)
+                     octant_4->push_back(point);
+                 else
+                     octant_5->push_back(point);
+             }
+             else{
+                 if(point.z <= mid_z)
+                     octant_6->push_back(point);
+                 else
+                     octant_7->push_back(point);
+             }
+         }
+
+
+     }
+
+}
+
+
+
+void Alfa_Pc_Compress::divide_in_octants_2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) // PCL, mais lenta
 {
 
     //demora mais
@@ -829,6 +913,18 @@ void Alfa_Pc_Compress::divide_in_octants_2(pcl::PointCloud<pcl::PointXYZRGB>::Pt
     mid_x = (maxPt.x + minPt.x)/2 ;
     mid_y = (maxPt.y + minPt.y)/2 ;
     mid_z = (maxPt.z + minPt.z)/2 ;
+
+    printf("%f \n",maxPt.x);
+    printf("%f \n",maxPt.y);
+    printf("%f \n",maxPt.z);
+    printf("%f \n",minPt.x);
+    printf("%f \n",minPt.y);
+    printf("%f \n",minPt.z);
+
+    printf("%f \n",mid_x);
+    printf("%f \n",mid_y);
+    printf("%f \n",mid_z);
+
 
 
     for (int i=0;i<input_cloud->size();i++) {
@@ -1144,8 +1240,7 @@ void Alfa_Pc_Compress::run_worker_thread_octants_full(uint8_t thread_number, pcl
 void Alfa_Pc_Compress::run_worker_thread_octants(uint8_t thread_number, pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
 {
 
-    if(thread_number==0){
-
+    if(thread_number==0){  
         compress_octant_0();
         octant_0->clear();
         oct_0 = true;
