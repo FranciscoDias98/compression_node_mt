@@ -220,6 +220,7 @@ namespace pcl
     template<typename PointT, typename LeafT, typename BranchT, typename OctreeT> void
     OctreePointCloudCompression<PointT, LeafT, BranchT, OctreeT>::entropyEncoding (std::ostream& compressed_tree_data_out_arg)
     {
+      PCL_INFO ("*** OLA Enctropy Encoding ***\n");
       uint64_t binary_tree_data_vector_size;
       uint64_t point_avg_color_data_vector_size;
 

@@ -649,7 +649,10 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
         //std::vector<char> occupancy_codes;
         //occupancy_codes.insert(occupancy_codes.end(),PointCloudEncoder_0->binary_tree_data_vector_.begin(),PointCloudEncoder_0->binary_tree_data_vector_.end());
+//        for(int i=0; i<PointCloudEncoder_0->binary_tree_data_vector_.size();i++)
+//            printf("%i --> %x \n",i,PointCloudEncoder_0->binary_tree_data_vector_[i]);
 
+        printf("\n------------------------------------------------------------\n");
         PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_1->binary_tree_data_vector_.begin(),PointCloudEncoder_1->binary_tree_data_vector_.end());
         PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_2->binary_tree_data_vector_.begin(),PointCloudEncoder_2->binary_tree_data_vector_.end());
         PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_3->binary_tree_data_vector_.begin(),PointCloudEncoder_3->binary_tree_data_vector_.end());
@@ -657,9 +660,6 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_5->binary_tree_data_vector_.begin(),PointCloudEncoder_5->binary_tree_data_vector_.end());
         PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_6->binary_tree_data_vector_.begin(),PointCloudEncoder_6->binary_tree_data_vector_.end());
         PointCloudEncoder_0->binary_tree_data_vector_.insert(PointCloudEncoder_0->binary_tree_data_vector_.end(),PointCloudEncoder_7->binary_tree_data_vector_.begin(),PointCloudEncoder_7->binary_tree_data_vector_.end());
-
-        //for(int i=0; i<PointCloudEncoder_0->binary_tree_data_vector_.size();i++)
-            //printf("%i --> %x \n",i,PointCloudEncoder_0->binary_tree_data_vector_[i]);
 
 
 
@@ -670,9 +670,10 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         auto merge_duration = duration_cast<milliseconds>(merge_stop - merge_start);
         ROS_INFO("------ Merge Duration in %ld ms ----- ",merge_duration.count());
 
+        printf("Binary Tree Data Vector Size: %d bytes\n",PointCloudEncoder_0->binary_tree_data_vector_.size());
 
         auto compress_merged_start = high_resolution_clock::now();
-        PointCloudEncoder_0->entropyEncoding(compressed_data);   // Vai ser aqui para mandar para o HW <-----------
+        PointCloudEncoder_0->my_entropyEncoding(compressed_data);   // Vai ser aqui para mandar para o HW <-----------
         auto compress_merged_stop = high_resolution_clock::now();
         auto compress_merged_duration = duration_cast<milliseconds>(compress_merged_stop - compress_merged_start);
         ROS_INFO("------ Compress Merged Duration in %ld ms ----- ",compress_merged_duration.count());
@@ -773,46 +774,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
 
 
-void Alfa_Pc_Compress::divide_in_octants(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) // Bad Division
-{
-    //pcl::PointXYZRGB minPt, maxPt;
-    //pcl::getMinMax3D(*input_cloud,minPt,maxPt);
 
-
-    octant_0->header = input_cloud->header;
-    octant_1->header = input_cloud->header;
-    octant_2->header = input_cloud->header;
-    octant_3->header = input_cloud->header;
-    octant_4->header = input_cloud->header;
-    octant_5->header = input_cloud->header;
-    octant_6->header = input_cloud->header;
-    octant_7->header = input_cloud->header;
-
-
-
-
-    for (int i=0;i<input_cloud->size();i++) {
-        pcl::PointXYZRGB point = (*input_cloud)[i];
-
-        if(point.x >= 0 && point.y >=0 && point.z >=0)
-                octant_0->push_back(point);
-        else if(point.x < 0 && point.y >= 0 && point.z >= 0)
-                octant_1->push_back(point);
-        else if(point.x < 0 && point.y < 0 && point.z >= 0)
-                octant_2->push_back(point);
-        else if(point.x >= 0 && point.y < 0 && point.z >= 0)
-                octant_3->push_back(point);
-        else if(point.x >= 0 && point.y >= 0 && point.z < 0)
-                octant_4->push_back(point);
-        else if(point.x < 0 && point.y >= 0 && point.z < 0)
-                octant_5->push_back(point);
-        else if(point.x < 0 && point.y < 0 && point.z < 0)
-                octant_6->push_back(point);
-        else if(point.x >= 0 && point.y < 0 && point.z < 0)
-                octant_7->push_back(point);
-
-    }
-}
 
 void Alfa_Pc_Compress::divide_in_octants_test(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud){ // Funciona. mais rapido que a pcl
 
@@ -899,69 +861,7 @@ void Alfa_Pc_Compress::divide_in_octants_test(pcl::PointCloud<pcl::PointXYZRGB>:
 
 
 
-void Alfa_Pc_Compress::divide_in_octants_2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) // PCL, mais lenta
-{
 
-    //demora mais
-    pcl::PointXYZRGB minPt, maxPt;
-    pcl::getMinMax3D(*input_cloud,minPt,maxPt);
-
-    float mid_x,mid_y,mid_z;
-
-    mid_x = (maxPt.x + minPt.x)/2 ;
-    mid_y = (maxPt.y + minPt.y)/2 ;
-    mid_z = (maxPt.z + minPt.z)/2 ;
-
-    printf("%f \n",maxPt.x);
-    printf("%f \n",maxPt.y);
-    printf("%f \n",maxPt.z);
-    printf("%f \n",minPt.x);
-    printf("%f \n",minPt.y);
-    printf("%f \n",minPt.z);
-
-    printf("%f \n",mid_x);
-    printf("%f \n",mid_y);
-    printf("%f \n",mid_z);
-
-
-
-    for (int i=0;i<input_cloud->size();i++) {
-        pcl::PointXYZRGB point = (*input_cloud)[i];
-
-        if(point.x <= mid_x){
-            if(point.y <= mid_y){
-                if(point.z <= mid_z)
-                    octant_0->push_back(point);
-                else
-                    octant_1->push_back(point);
-            }
-            else {
-                if(point.z <= mid_z)
-                    octant_2->push_back(point);
-                else
-                    octant_3->push_back(point);
-            }
-        }
-        else {
-            if(point.y <= mid_y){
-                if(point.z <= mid_z)
-                    octant_4->push_back(point);
-                else
-                    octant_5->push_back(point);
-            }
-            else{
-                if(point.z <= mid_z)
-                    octant_6->push_back(point);
-                else
-                    octant_7->push_back(point);
-            }
-        }
-
-
-    }
-
-
-}
 
 void Alfa_Pc_Compress::divide_in_octants_multi(int thread_number,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud)
 {
@@ -1243,11 +1143,6 @@ void Alfa_Pc_Compress::run_worker_thread_octants(uint8_t thread_number, pcl::Poi
     if(thread_number==0){  
         compress_octant_0();
         octant_0->clear();
-
-//        double min_x_0, min_y_0, min_z_0, max_x_0, max_y_0, max_z_0;
-//        PointCloudEncoder_0->getBoundingBox(min_x_0, min_y_0, min_z_0, max_x_0, max_y_0, max_z_0);
-
-
         std::cout << "Acabei Thread " << (int)thread_number << "\n";
         oct_0 = true;
 
@@ -1256,9 +1151,6 @@ void Alfa_Pc_Compress::run_worker_thread_octants(uint8_t thread_number, pcl::Poi
 
         compress_octant_1();
         octant_1->clear();
-
-//        double min_x_1, min_y_1, min_z_1, max_x_1, max_y_1, max_z_1;
-//        PointCloudEncoder_1->getBoundingBox(min_x_1, min_y_1, min_z_1, max_x_1, max_y_1, max_z_1);
         std::cout << "Acabei Thread " << (int)thread_number << "\n";
         oct_1 = true;
 
@@ -1628,19 +1520,26 @@ void Alfa_Pc_Compress::metrics(std::stringstream& compressed_data, pcl::PointClo
 void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure::Request configs)
 {
     //compression_profile_.octreeResolution = configs.configurations[0].config;
-    PointCloudEncoder->setResolution(configs.configurations[0].config);
 
-    PointCloudEncoder_0->setResolution(configs.configurations[0].config);
-    PointCloudEncoder_1->setResolution(configs.configurations[0].config);
-    PointCloudEncoder_2->setResolution(configs.configurations[0].config);
-    PointCloudEncoder_3->setResolution(configs.configurations[0].config);
-    PointCloudEncoder_4->setResolution(configs.configurations[0].config);
-    PointCloudEncoder_5->setResolution(configs.configurations[0].config);
-    PointCloudEncoder_6->setResolution(configs.configurations[0].config);
-    PointCloudEncoder_7->setResolution(configs.configurations[0].config);
 
     multi_thread = configs.configurations[1].config;
     //delete(PointCloudEncoder);
+
+    if(multi_thread){
+        set_compression_profile();
+        PointCloudEncoder_0->setResolution(configs.configurations[0].config);
+        PointCloudEncoder_1->setResolution(configs.configurations[0].config);
+        PointCloudEncoder_2->setResolution(configs.configurations[0].config);
+        PointCloudEncoder_3->setResolution(configs.configurations[0].config);
+        PointCloudEncoder_4->setResolution(configs.configurations[0].config);
+        PointCloudEncoder_5->setResolution(configs.configurations[0].config);
+        PointCloudEncoder_6->setResolution(configs.configurations[0].config);
+        PointCloudEncoder_7->setResolution(configs.configurations[0].config);
+    }else{
+        set_compression_profile();
+        PointCloudEncoder->setResolution(configs.configurations[0].config);
+    }
+
 }
 
 
@@ -1784,9 +1683,9 @@ void Alfa_Pc_Compress::compress_octant_0()
 
     PointCloudEncoder_0->setInputCloud(octant_0);
 
-    mux_oct_0.lock();
+   // mux_oct_0.lock();
     PointCloudEncoder_0->addPointsFromInputCloud();
-    mux_oct_0.unlock();
+    //mux_oct_0.unlock();
 
     if( PointCloudEncoder_0->getLeafCount()>0){
         PointCloudEncoder_0->cloud_with_color_ = false;
@@ -1839,9 +1738,9 @@ void Alfa_Pc_Compress::compress_octant_1()
 
     PointCloudEncoder_1->setInputCloud(octant_1);
 
-    mux_oct_1.lock();
+    //mux_oct_1.lock();
     PointCloudEncoder_1->addPointsFromInputCloud();
-    mux_oct_1.unlock();
+    //mux_oct_1.unlock();
 
     if( PointCloudEncoder_1->getLeafCount()>0){
         PointCloudEncoder_1->cloud_with_color_ = false;
@@ -1894,9 +1793,9 @@ void Alfa_Pc_Compress::compress_octant_2()
 
 
     PointCloudEncoder_2->setInputCloud(octant_2);
-    mux_oct_2.lock();
+    //mux_oct_2.lock();
     PointCloudEncoder_2->addPointsFromInputCloud();
-    mux_oct_2.unlock();
+    //mux_oct_2.unlock();
 
     if( PointCloudEncoder_2->getLeafCount()>0){
         PointCloudEncoder_2->cloud_with_color_ = false;
@@ -1949,9 +1848,9 @@ void Alfa_Pc_Compress::compress_octant_3()
 
     PointCloudEncoder_3->setInputCloud(octant_3);
 
-    mux_oct_3.lock();
+    //mux_oct_3.lock();
     PointCloudEncoder_3->addPointsFromInputCloud();
-    mux_oct_3.unlock();
+    //mux_oct_3.unlock();
 
     if( PointCloudEncoder_3->getLeafCount()>0){
         PointCloudEncoder_3->cloud_with_color_ = false;
@@ -2005,9 +1904,9 @@ void Alfa_Pc_Compress::compress_octant_4()
 
     PointCloudEncoder_4->setInputCloud(octant_4);
 
-    mux_oct_4.lock();
+    //mux_oct_4.lock();
     PointCloudEncoder_4->addPointsFromInputCloud();
-    mux_oct_4.unlock();
+    //mux_oct_4.unlock();
 
     if( PointCloudEncoder_4->getLeafCount()>0){
         PointCloudEncoder_4->cloud_with_color_ = false;
@@ -2060,9 +1959,9 @@ void Alfa_Pc_Compress::compress_octant_5()
 
     PointCloudEncoder_5->setInputCloud(octant_5);
 
-    mux_oct_5.lock();
+    //mux_oct_5.lock();
     PointCloudEncoder_5->addPointsFromInputCloud();
-    mux_oct_5.unlock();
+    //mux_oct_5.unlock();
 
     if( PointCloudEncoder_5->getLeafCount()>0){
         PointCloudEncoder_5->cloud_with_color_ = false;
@@ -2116,9 +2015,9 @@ void Alfa_Pc_Compress::compress_octant_6()
 
     PointCloudEncoder_6->setInputCloud(octant_6);
 
-    mux_oct_6.lock();
+    //mux_oct_6.lock();
     PointCloudEncoder_6->addPointsFromInputCloud();
-    mux_oct_6.unlock();
+    //mux_oct_6.unlock();
 
     if( PointCloudEncoder_6->getLeafCount()>0){
         PointCloudEncoder_6->cloud_with_color_ = false;
@@ -2172,9 +2071,9 @@ void Alfa_Pc_Compress::compress_octant_7()
 
     PointCloudEncoder_7->setInputCloud(octant_7);
 
-    mux_oct_7.lock();
+    //mux_oct_7.lock();
     PointCloudEncoder_7->addPointsFromInputCloud();
-    mux_oct_7.unlock();
+    //mux_oct_7.unlock();
 
     if( PointCloudEncoder_7->getLeafCount()>0){
         PointCloudEncoder_7->cloud_with_color_ = false;
@@ -2393,3 +2292,140 @@ void Alfa_Pc_Compress::run_worker_thread_odd_even(int thread_number,pcl::PointCl
 
 
 }
+
+void Alfa_Pc_Compress::divide_in_octants(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) // Bad Division
+{
+    //pcl::PointXYZRGB minPt, maxPt;
+    //pcl::getMinMax3D(*input_cloud,minPt,maxPt);
+
+
+    octant_0->header = input_cloud->header;
+    octant_1->header = input_cloud->header;
+    octant_2->header = input_cloud->header;
+    octant_3->header = input_cloud->header;
+    octant_4->header = input_cloud->header;
+    octant_5->header = input_cloud->header;
+    octant_6->header = input_cloud->header;
+    octant_7->header = input_cloud->header;
+
+
+
+
+    for (int i=0;i<input_cloud->size();i++) {
+        pcl::PointXYZRGB point = (*input_cloud)[i];
+
+        if(point.x >= 0 && point.y >=0 && point.z >=0)
+                octant_0->push_back(point);
+        else if(point.x < 0 && point.y >= 0 && point.z >= 0)
+                octant_1->push_back(point);
+        else if(point.x < 0 && point.y < 0 && point.z >= 0)
+                octant_2->push_back(point);
+        else if(point.x >= 0 && point.y < 0 && point.z >= 0)
+                octant_3->push_back(point);
+        else if(point.x >= 0 && point.y >= 0 && point.z < 0)
+                octant_4->push_back(point);
+        else if(point.x < 0 && point.y >= 0 && point.z < 0)
+                octant_5->push_back(point);
+        else if(point.x < 0 && point.y < 0 && point.z < 0)
+                octant_6->push_back(point);
+        else if(point.x >= 0 && point.y < 0 && point.z < 0)
+                octant_7->push_back(point);
+
+    }
+}
+
+void Alfa_Pc_Compress::divide_in_octants_2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) // PCL, mais lenta
+{
+
+    //demora mais
+    pcl::PointXYZRGB minPt, maxPt;
+    pcl::getMinMax3D(*input_cloud,minPt,maxPt);
+
+    float mid_x,mid_y,mid_z;
+
+    mid_x = (maxPt.x + minPt.x)/2 ;
+    mid_y = (maxPt.y + minPt.y)/2 ;
+    mid_z = (maxPt.z + minPt.z)/2 ;
+
+    printf("%f \n",maxPt.x);
+    printf("%f \n",maxPt.y);
+    printf("%f \n",maxPt.z);
+    printf("%f \n",minPt.x);
+    printf("%f \n",minPt.y);
+    printf("%f \n",minPt.z);
+
+    printf("%f \n",mid_x);
+    printf("%f \n",mid_y);
+    printf("%f \n",mid_z);
+
+
+
+    for (int i=0;i<input_cloud->size();i++) {
+        pcl::PointXYZRGB point = (*input_cloud)[i];
+
+        if(point.x <= mid_x){
+            if(point.y <= mid_y){
+                if(point.z <= mid_z)
+                    octant_0->push_back(point);
+                else
+                    octant_1->push_back(point);
+            }
+            else {
+                if(point.z <= mid_z)
+                    octant_2->push_back(point);
+                else
+                    octant_3->push_back(point);
+            }
+        }
+        else {
+            if(point.y <= mid_y){
+                if(point.z <= mid_z)
+                    octant_4->push_back(point);
+                else
+                    octant_5->push_back(point);
+            }
+            else{
+                if(point.z <= mid_z)
+                    octant_6->push_back(point);
+                else
+                    octant_7->push_back(point);
+            }
+        }
+
+
+    }
+
+
+}
+
+
+//for(int i=0; i<PointCloudEncoder_1->binary_tree_data_vector_.size();i++)
+//    printf("%i --> %x \n",i,PointCloudEncoder_1->binary_tree_data_vector_[i]);
+
+//printf("\n------------------------------------------------------------\n");
+//for(int i=0; i<PointCloudEncoder_2->binary_tree_data_vector_.size();i++)
+//    printf("%i --> %x \n",i,PointCloudEncoder_2->binary_tree_data_vector_[i]);
+
+//printf("\n------------------------------------------------------------\n");
+//for(int i=0; i<PointCloudEncoder_3->binary_tree_data_vector_.size();i++)
+//    printf("%i --> %x \n",i,PointCloudEncoder_3->binary_tree_data_vector_[i]);
+
+//printf("\n------------------------------------------------------------\n");
+//for(int i=0; i<PointCloudEncoder_4->binary_tree_data_vector_.size();i++)
+//    printf("%i --> %x \n",i,PointCloudEncoder_4->binary_tree_data_vector_[i]);
+
+//printf("\n------------------------------------------------------------\n");
+//for(int i=0; i<PointCloudEncoder_5->binary_tree_data_vector_.size();i++)
+//    printf("%i --> %x \n",i,PointCloudEncoder_5->binary_tree_data_vector_[i]);
+
+//printf("\n------------------------------------------------------------\n");
+//for(int i=0; i<PointCloudEncoder_6->binary_tree_data_vector_.size();i++)
+//    printf("%i --> %x \n",i,PointCloudEncoder_6->binary_tree_data_vector_[i]);
+
+//printf("\n------------------------------------------------------------\n");
+//for(int i=0; i<PointCloudEncoder_7->binary_tree_data_vector_.size();i++)
+//    printf("%i --> %x \n",i,PointCloudEncoder_7->binary_tree_data_vector_[i]);
+
+//printf("\n------------------------------------------------------------\n");
+//for(int i=0; i<PointCloudEncoder_0->binary_tree_data_vector_.size();i++)
+//    printf("%i --> %x \n",i,PointCloudEncoder_0->binary_tree_data_vector_[i]);

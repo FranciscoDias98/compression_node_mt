@@ -651,6 +651,81 @@ namespace pcl
         void
         entropyEncoding (std::ostream& compressed_tree_data_out_arg);
 
+
+
+        void
+        my_entropyEncoding (std::ostream& compressed_tree_data_out_arg){
+            PCL_INFO ("*** OLA Enctropy Encoding ***\n");
+            auto start = std::chrono::high_resolution_clock::now();
+
+            uint64_t binary_tree_data_vector_size;
+            uint64_t point_avg_color_data_vector_size;
+
+            compressed_point_data_len_ = 0;
+            compressed_color_data_len_ = 0;
+
+            // encode binary octree structure
+            binary_tree_data_vector_size = binary_tree_data_vector_.size ();
+            printf("Size vector : %d\n",binary_tree_data_vector_size);
+            compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&binary_tree_data_vector_size), sizeof (binary_tree_data_vector_size));
+            compressed_point_data_len_ += entropy_coder_.encodeCharVectorToStream (binary_tree_data_vector_,
+                                                                                   compressed_tree_data_out_arg);
+
+            printf("Size compressed data : %d\n",compressed_point_data_len_);
+
+            if (cloud_with_color_)
+            {
+              // encode averaged voxel color information
+              std::vector<char>& pointAvgColorDataVector = color_coder_.getAverageDataVector ();
+              point_avg_color_data_vector_size = pointAvgColorDataVector.size ();
+              compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_avg_color_data_vector_size),
+                                                  sizeof (point_avg_color_data_vector_size));
+              compressed_color_data_len_ += entropy_coder_.encodeCharVectorToStream (pointAvgColorDataVector,
+                                                                                     compressed_tree_data_out_arg);
+            }
+
+            if (!do_voxel_grid_enDecoding_)
+            {
+              uint64_t pointCountDataVector_size;
+              uint64_t point_diff_data_vector_size;
+              uint64_t point_diff_color_data_vector_size;
+
+              // encode amount of points per voxel
+              pointCountDataVector_size = point_count_data_vector_.size ();
+              compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&pointCountDataVector_size), sizeof (pointCountDataVector_size));
+              compressed_point_data_len_ += entropy_coder_.encodeIntVectorToStream (point_count_data_vector_,
+                                                                                compressed_tree_data_out_arg);
+
+              // encode differential point information
+              std::vector<char>& point_diff_data_vector = point_coder_.getDifferentialDataVector ();
+              point_diff_data_vector_size = point_diff_data_vector.size ();
+              compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_diff_data_vector_size), sizeof (point_diff_data_vector_size));
+              compressed_point_data_len_ += entropy_coder_.encodeCharVectorToStream (point_diff_data_vector,
+                                                                                     compressed_tree_data_out_arg);
+              if (cloud_with_color_)
+              {
+                // encode differential color information
+                std::vector<char>& point_diff_color_data_vector = color_coder_.getDifferentialDataVector ();
+                point_diff_color_data_vector_size = point_diff_color_data_vector.size ();
+                compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_diff_color_data_vector_size),
+                                                 sizeof (point_diff_color_data_vector_size));
+                compressed_color_data_len_ += entropy_coder_.encodeCharVectorToStream (point_diff_color_data_vector,
+                                                                                       compressed_tree_data_out_arg);
+              }
+            }
+            // flush output stream
+
+            compressed_tree_data_out_arg.flush ();
+
+            auto stop = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+            ROS_INFO("------ Entropy Encoding in %ld ms ----- ",duration.count());
+
+
+
+        };
+
+
         /** \brief Entropy decoding of input binary stream and output to information vectors
           * \param compressed_tree_data_in_arg: binary input stream
           */
