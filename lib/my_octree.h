@@ -34,36 +34,32 @@ class Octree
 public:
     struct OctreeNode
     {
-        OctreeNode * children[8];
-        OctreeNode * parent; // optional
+        OctreeNode *children[8];
+        OctreeNode *parent; // optional
         bool is_leaf;
         BoundingBox bound_box;
         unsigned int leafs; // <---- ?????
-        std::vector<pcl::PointXYZ> points_list;
+        std::vector<pcl::PointXYZRGB> points_list;
         void *usr_val;
-        //Object *     Objects;
-        //Vector3      Center;
-        //Vector3      HalfSize;
-        //uint8_t occupacy_code;
-        //pcl::PointXYZ point;
-
     };
 
-    Octree() {
-
-    }
+    Octree();
+    Octree(OctreeNode node,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
     ~Octree();
 
     OctreeNode *root;
 
-    void get_AABB();
+    void calculate_bounds();
+    void build_octree();
+
+
 protected:
     double resolution; // NxNxN
     unsigned int depth;
     unsigned int point_count;
     unsigned int leaf_count;
     unsigned int branch_count;
-    std::vector<pcl::PointXYZ> points_vector;
+    std::vector<pcl::PointXYZRGB> points_vector;
     std::vector<char> bit_patern;
     BoundingBox bounding_box_region;
 

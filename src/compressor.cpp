@@ -569,6 +569,14 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 {
 
     this->in_cloud = input_cloud;
+    octant_0->clear();
+    octant_1->clear();
+    octant_2->clear();
+    octant_3->clear();
+    octant_4->clear();
+    octant_5->clear();
+    octant_6->clear();
+    octant_7->clear();
 
     std::stringstream compressed_data;
     output_compressed.header = header->header;
@@ -594,6 +602,29 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         auto stop_divide = high_resolution_clock::now();
         auto duration_divide = duration_cast<milliseconds>(stop_divide - start_divide);
         ROS_INFO("------ Octant Division in %ld ms ----- ",duration_divide.count());
+
+
+
+        octant_0->clear();
+        octant_1->clear();
+        octant_2->clear();
+        octant_3->clear();
+        octant_4->clear();
+        octant_5->clear();
+        octant_6->clear();
+        octant_7->clear();
+
+
+        auto start_divide2 = high_resolution_clock::now();
+        //divide_in_octants_test(input_cloud); // <---------------------- Check Speed ????? divide_in_octants
+        divide_in_octants_test(input_cloud);
+        auto stop_divide2 = high_resolution_clock::now();
+        auto duration_divide2 = duration_cast<milliseconds>(stop_divide2 - start_divide2);
+        ROS_INFO("------ Octant Division 2 in %ld ms ----- ",duration_divide2.count());
+
+
+
+
 
 
         if(thread_list.size()>1)
@@ -860,6 +891,46 @@ void Alfa_Pc_Compress::divide_in_octants_test(pcl::PointCloud<pcl::PointXYZRGB>:
 
 }
 
+void Alfa_Pc_Compress::divide_in_octants(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) // Bad Division ?????
+{
+    //pcl::PointXYZRGB minPt, maxPt;
+    //pcl::getMinMax3D(*input_cloud,minPt,maxPt);
+
+
+    octant_0->header = input_cloud->header;
+    octant_1->header = input_cloud->header;
+    octant_2->header = input_cloud->header;
+    octant_3->header = input_cloud->header;
+    octant_4->header = input_cloud->header;
+    octant_5->header = input_cloud->header;
+    octant_6->header = input_cloud->header;
+    octant_7->header = input_cloud->header;
+
+
+
+
+    for (int i=0;i<input_cloud->size();i++) {
+        pcl::PointXYZRGB point = (*input_cloud)[i];
+
+        if(point.x >= 0 && point.y >=0 && point.z >=0)
+                octant_0->push_back(point);
+        else if(point.x < 0 && point.y >= 0 && point.z >= 0)
+                octant_1->push_back(point);
+        else if(point.x < 0 && point.y < 0 && point.z >= 0)
+                octant_2->push_back(point);
+        else if(point.x >= 0 && point.y < 0 && point.z >= 0)
+                octant_3->push_back(point);
+        else if(point.x >= 0 && point.y >= 0 && point.z < 0)
+                octant_4->push_back(point);
+        else if(point.x < 0 && point.y >= 0 && point.z < 0)
+                octant_5->push_back(point);
+        else if(point.x < 0 && point.y < 0 && point.z < 0)
+                octant_6->push_back(point);
+        else if(point.x >= 0 && point.y < 0 && point.z < 0)
+                octant_7->push_back(point);
+
+    }
+}
 
 
 
@@ -2294,46 +2365,7 @@ void Alfa_Pc_Compress::run_worker_thread_odd_even(int thread_number,pcl::PointCl
 
 }
 
-void Alfa_Pc_Compress::divide_in_octants(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) // Bad Division
-{
-    //pcl::PointXYZRGB minPt, maxPt;
-    //pcl::getMinMax3D(*input_cloud,minPt,maxPt);
 
-
-    octant_0->header = input_cloud->header;
-    octant_1->header = input_cloud->header;
-    octant_2->header = input_cloud->header;
-    octant_3->header = input_cloud->header;
-    octant_4->header = input_cloud->header;
-    octant_5->header = input_cloud->header;
-    octant_6->header = input_cloud->header;
-    octant_7->header = input_cloud->header;
-
-
-
-
-    for (int i=0;i<input_cloud->size();i++) {
-        pcl::PointXYZRGB point = (*input_cloud)[i];
-
-        if(point.x >= 0 && point.y >=0 && point.z >=0)
-                octant_0->push_back(point);
-        else if(point.x < 0 && point.y >= 0 && point.z >= 0)
-                octant_1->push_back(point);
-        else if(point.x < 0 && point.y < 0 && point.z >= 0)
-                octant_2->push_back(point);
-        else if(point.x >= 0 && point.y < 0 && point.z >= 0)
-                octant_3->push_back(point);
-        else if(point.x >= 0 && point.y >= 0 && point.z < 0)
-                octant_4->push_back(point);
-        else if(point.x < 0 && point.y >= 0 && point.z < 0)
-                octant_5->push_back(point);
-        else if(point.x < 0 && point.y < 0 && point.z < 0)
-                octant_6->push_back(point);
-        else if(point.x >= 0 && point.y < 0 && point.z < 0)
-                octant_7->push_back(point);
-
-    }
-}
 
 void Alfa_Pc_Compress::divide_in_octants_2(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud) // PCL, mais lenta
 {
