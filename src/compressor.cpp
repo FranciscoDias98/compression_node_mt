@@ -605,22 +605,22 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
 
 
-        octant_0->clear();
-        octant_1->clear();
-        octant_2->clear();
-        octant_3->clear();
-        octant_4->clear();
-        octant_5->clear();
-        octant_6->clear();
-        octant_7->clear();
+//        octant_0->clear();
+//        octant_1->clear();
+//        octant_2->clear();
+//        octant_3->clear();
+//        octant_4->clear();
+//        octant_5->clear();
+//        octant_6->clear();
+//        octant_7->clear();
 
 
-        auto start_divide2 = high_resolution_clock::now();
-        //divide_in_octants_test(input_cloud); // <---------------------- Check Speed ????? divide_in_octants
-        divide_in_octants_test(input_cloud);
-        auto stop_divide2 = high_resolution_clock::now();
-        auto duration_divide2 = duration_cast<milliseconds>(stop_divide2 - start_divide2);
-        ROS_INFO("------ Octant Division 2 in %ld ms ----- ",duration_divide2.count());
+//        auto start_divide2 = high_resolution_clock::now();
+//        //divide_in_octants_test(input_cloud); // <---------------------- Check Speed ????? divide_in_octants
+//        divide_in_octants_test(input_cloud);
+//        auto stop_divide2 = high_resolution_clock::now();
+//        auto duration_divide2 = duration_cast<milliseconds>(stop_divide2 - start_divide2);
+//        ROS_INFO("------ Octant Division 2 in %ld ms ----- ",duration_divide2.count());
 
 
 
