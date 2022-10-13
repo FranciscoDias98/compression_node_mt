@@ -589,7 +589,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
 
         auto start_divide = high_resolution_clock::now();
-        divide_in_octants_test(input_cloud); // <---------------------- Check Speed ?????
+        //divide_in_octants_test(input_cloud); // <---------------------- Check Speed ????? divide_in_octants
+        divide_in_octants(input_cloud);
         auto stop_divide = high_resolution_clock::now();
         auto duration_divide = duration_cast<milliseconds>(stop_divide - start_divide);
         ROS_INFO("------ Octant Division in %ld ms ----- ",duration_divide.count());
@@ -1683,9 +1684,9 @@ void Alfa_Pc_Compress::compress_octant_0()
 
     PointCloudEncoder_0->setInputCloud(octant_0);
 
-   // mux_oct_0.lock();
+    mux_oct_0.lock();
     PointCloudEncoder_0->addPointsFromInputCloud();
-    //mux_oct_0.unlock();
+    mux_oct_0.unlock();
 
     if( PointCloudEncoder_0->getLeafCount()>0){
         PointCloudEncoder_0->cloud_with_color_ = false;
@@ -1738,9 +1739,9 @@ void Alfa_Pc_Compress::compress_octant_1()
 
     PointCloudEncoder_1->setInputCloud(octant_1);
 
-    //mux_oct_1.lock();
+    mux_oct_1.lock();
     PointCloudEncoder_1->addPointsFromInputCloud();
-    //mux_oct_1.unlock();
+    mux_oct_1.unlock();
 
     if( PointCloudEncoder_1->getLeafCount()>0){
         PointCloudEncoder_1->cloud_with_color_ = false;
@@ -1793,9 +1794,9 @@ void Alfa_Pc_Compress::compress_octant_2()
 
 
     PointCloudEncoder_2->setInputCloud(octant_2);
-    //mux_oct_2.lock();
+    mux_oct_2.lock();
     PointCloudEncoder_2->addPointsFromInputCloud();
-    //mux_oct_2.unlock();
+    mux_oct_2.unlock();
 
     if( PointCloudEncoder_2->getLeafCount()>0){
         PointCloudEncoder_2->cloud_with_color_ = false;
@@ -1848,9 +1849,9 @@ void Alfa_Pc_Compress::compress_octant_3()
 
     PointCloudEncoder_3->setInputCloud(octant_3);
 
-    //mux_oct_3.lock();
+    mux_oct_3.lock();
     PointCloudEncoder_3->addPointsFromInputCloud();
-    //mux_oct_3.unlock();
+    mux_oct_3.unlock();
 
     if( PointCloudEncoder_3->getLeafCount()>0){
         PointCloudEncoder_3->cloud_with_color_ = false;
@@ -1904,9 +1905,9 @@ void Alfa_Pc_Compress::compress_octant_4()
 
     PointCloudEncoder_4->setInputCloud(octant_4);
 
-    //mux_oct_4.lock();
+    mux_oct_4.lock();
     PointCloudEncoder_4->addPointsFromInputCloud();
-    //mux_oct_4.unlock();
+    mux_oct_4.unlock();
 
     if( PointCloudEncoder_4->getLeafCount()>0){
         PointCloudEncoder_4->cloud_with_color_ = false;
@@ -1959,9 +1960,9 @@ void Alfa_Pc_Compress::compress_octant_5()
 
     PointCloudEncoder_5->setInputCloud(octant_5);
 
-    //mux_oct_5.lock();
+    mux_oct_5.lock();
     PointCloudEncoder_5->addPointsFromInputCloud();
-    //mux_oct_5.unlock();
+    mux_oct_5.unlock();
 
     if( PointCloudEncoder_5->getLeafCount()>0){
         PointCloudEncoder_5->cloud_with_color_ = false;
@@ -2015,9 +2016,9 @@ void Alfa_Pc_Compress::compress_octant_6()
 
     PointCloudEncoder_6->setInputCloud(octant_6);
 
-    //mux_oct_6.lock();
+    mux_oct_6.lock();
     PointCloudEncoder_6->addPointsFromInputCloud();
-    //mux_oct_6.unlock();
+    mux_oct_6.unlock();
 
     if( PointCloudEncoder_6->getLeafCount()>0){
         PointCloudEncoder_6->cloud_with_color_ = false;
@@ -2071,9 +2072,9 @@ void Alfa_Pc_Compress::compress_octant_7()
 
     PointCloudEncoder_7->setInputCloud(octant_7);
 
-    //mux_oct_7.lock();
+    mux_oct_7.lock();
     PointCloudEncoder_7->addPointsFromInputCloud();
-    //mux_oct_7.unlock();
+    mux_oct_7.unlock();
 
     if( PointCloudEncoder_7->getLeafCount()>0){
         PointCloudEncoder_7->cloud_with_color_ = false;
