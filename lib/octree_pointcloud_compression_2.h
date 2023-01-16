@@ -298,17 +298,17 @@ namespace pcl
 
 
             // octree info //
-            FILE *fp;
-            fp = fopen("Octree_structure.txt", "wb");
-            for (auto it = this->begin(); it != this->end(); ++it) {
-                if (it.isBranchNode()) {
-                    fprintf(fp,"Branch Node | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
-                }
-                if (it.isLeafNode()) {
-                    fprintf(fp,"Leaf Branch | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
-                }
-            }
-            fclose(fp);
+//            FILE *fp;
+//            fp = fopen("Octree_structure.txt", "wb");
+//            for (auto it = this->begin(); it != this->end(); ++it) {
+//                if (it.isBranchNode()) {
+//                    fprintf(fp,"Branch Node | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
+//                }
+//                if (it.isLeafNode()) {
+//                    fprintf(fp,"Leaf Branch | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
+//                }
+//            }
+//            fclose(fp);
 
 
 
@@ -530,18 +530,18 @@ namespace pcl
             }
 
 
-            // octree info //
-            FILE *fp;
-            fp = fopen("Octree_structure.txt", "wb");
-            for (auto it = this->begin(); it != this->end(); ++it) {
-                if (it.isBranchNode()) {
-                    fprintf(fp,"Branch Node | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
-                }
-                if (it.isLeafNode()) {
-                    fprintf(fp,"Leaf Branch | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
-                }
-            }
-            fclose(fp);
+//            // octree info //
+//            FILE *fp;
+//            fp = fopen("Octree_structure.txt", "wb");
+//            for (auto it = this->begin(); it != this->end(); ++it) {
+//                if (it.isBranchNode()) {
+//                    fprintf(fp,"Branch Node | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
+//                }
+//                if (it.isLeafNode()) {
+//                    fprintf(fp,"Leaf Branch | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
+//                }
+//            }
+//            fclose(fp);
 
             // make sure cloud contains points
             if (this->leaf_count_>0) {
