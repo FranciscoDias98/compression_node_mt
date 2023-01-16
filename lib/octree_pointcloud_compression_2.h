@@ -40,9 +40,13 @@
 
 
 #include <pcl/octree/octree2buf_base.h>
-#include <pcl/octree/octree_pointcloud.h>
+#include <pcl/octree/octree_base.h>
+//#include <pcl/octree/octree_pointcloud.h>
+#include "octree_pointcloud.h"
 #include <pcl/compression/entropy_range_coder.h>
-
+#include <pcl/impl/instantiate.hpp>
+#include <pcl/octree/octree_container.h>
+#include <pcl/octree/octree_nodes.h>
 //#include "entropy_range_coder.h"
 
 #include "color_coding.h"
@@ -235,8 +239,38 @@ namespace pcl
             unsigned char recent_tree_depth =
                     static_cast<unsigned char> (this->getTreeDepth ());
             
-            static int counter;
-            static long tempos_test_2;
+            static int counter =0;
+            static long tempos_test_2 =0;
+
+            pcl::PointXYZRGB minPt, maxPt;
+            minPt.x = 0;
+            minPt.y = 0;
+            minPt.z = 0;
+            maxPt.x = 0;
+            maxPt.y = 0;
+            maxPt.z = 0;
+
+            for(auto &point: *cloud_arg){
+                if(point.x <= minPt.x)
+                       minPt.x = point.x;
+                if(point.y <= minPt.y)
+                       minPt.y = point.y;
+                if(point.z <= minPt.z)
+                       minPt.z = point.z;
+                if(point.x >= maxPt.x)
+                       maxPt.x = point.x;
+                if(point.y >= maxPt.y)
+                       maxPt.y = point.y;
+                if(point.z >= maxPt.z)
+                       maxPt.z = point.z;
+            }
+
+                 printf("%f \n",maxPt.x);
+                 printf("%f \n",maxPt.y);
+                 printf("%f \n",maxPt.z);
+                 printf("%f \n",minPt.x);
+                 printf("%f \n",minPt.y);
+                 printf("%f \n",minPt.z);
 
 
             auto start_setInputCloud = chrono::high_resolution_clock::now();
@@ -252,12 +286,40 @@ namespace pcl
 
             auto start_addPointsFromInputCloud = chrono::high_resolution_clock::now();
             // add point to octree
-            this->addPointsFromInputCloud ();
+
+            this->addPointsFromInputCloud();
+
+
             printf("------ Done addPointsFromInputCloud ------ \n ");
             auto stop_addPointsFromInputCloud = chrono::high_resolution_clock::now();
             auto duration_addPointsFromInputCloud = chrono::duration_cast<chrono::milliseconds>(stop_addPointsFromInputCloud - start_addPointsFromInputCloud);
             PCL_INFO("addPointsFromInputCloud Time:  %ld ms \n",duration_addPointsFromInputCloud);
             
+
+
+            // octree info //
+            FILE *fp;
+            fp = fopen("Octree_structure.txt", "wb");
+            for (auto it = this->begin(); it != this->end(); ++it) {
+                if (it.isBranchNode()) {
+                    fprintf(fp,"Branch Node | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
+                }
+                if (it.isLeafNode()) {
+                    fprintf(fp,"Leaf Branch | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
+                }
+            }
+            fclose(fp);
+
+
+
+//            FILE *fp;
+//            fp = fopen("Octree.txt", "w");
+
+//            for(int i=0;i<this->binary_tree_data_vector_.size();i++){
+//                fprintf(fp,"%d\n",i);
+//            }
+//            fclose(fp);
+
 
 
             // make sure cloud contains points
@@ -426,20 +488,19 @@ namespace pcl
             }
         }
 
+        void
+        encodePointCloud_3 (const PointCloudConstPtr &cloud_arg, std::ostream& compressed_tree_data_out_arg)
 
-        // ******************** Tentativa de Multithreading ***********************
-        //*************************************************************************
-        void encodePointCloud_multi_thread(const PointCloudConstPtr &cloud_arg, std::ostream& compressed_tree_data_out_arg,int thread_number){
-            std::cout << "//////////////// encodePointCloud_multi_thread TESTE //////////////////\n";
-
-
-
+        {
+            std::cout << "//////////////// encodePointCloud_3 TESTE //////////////////\n";
             unsigned char recent_tree_depth =
                     static_cast<unsigned char> (this->getTreeDepth ());
 
             static int counter;
             static long tempos_test_2;
 
+
+            try{
 
             auto start_setInputCloud = chrono::high_resolution_clock::now();
             // initialize octree
@@ -449,18 +510,38 @@ namespace pcl
             auto duration_setInputCloud = chrono::duration_cast<chrono::milliseconds>(stop_setInputCloud - start_setInputCloud);
             PCL_INFO("setInputCloud Time:  %ld ms \n",duration_setInputCloud);
 
+            } catch (std::bad_alloc & exception)
+            {
+               std::cerr << "bad_alloc detected: " << exception.what();
+            }
 
 
-
+            try{
             auto start_addPointsFromInputCloud = chrono::high_resolution_clock::now();
             // add point to octree
-            this->addPointsFromInputCloud ();
+            this->addPointsFromInputCloud_2 ();
             printf("------ Done addPointsFromInputCloud ------ \n ");
             auto stop_addPointsFromInputCloud = chrono::high_resolution_clock::now();
             auto duration_addPointsFromInputCloud = chrono::duration_cast<chrono::milliseconds>(stop_addPointsFromInputCloud - start_addPointsFromInputCloud);
             PCL_INFO("addPointsFromInputCloud Time:  %ld ms \n",duration_addPointsFromInputCloud);
+            }catch (std::bad_alloc & exception)
+            {
+               std::cerr << "bad_alloc detected: " << exception.what();
+            }
 
 
+            // octree info //
+            FILE *fp;
+            fp = fopen("Octree_structure.txt", "wb");
+            for (auto it = this->begin(); it != this->end(); ++it) {
+                if (it.isBranchNode()) {
+                    fprintf(fp,"Branch Node | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
+                }
+                if (it.isLeafNode()) {
+                    fprintf(fp,"Leaf Branch | %x | %d \n",it.getNodeConfiguration(),it.getCurrentOctreeDepth());
+                }
+            }
+            fclose(fp);
 
             // make sure cloud contains points
             if (this->leaf_count_>0) {
@@ -469,19 +550,19 @@ namespace pcl
                 // color field analysis
                 cloud_with_color_ = false;
                 /*
-            std::vector<pcl::PCLPointField> fields;
-            int rgba_index = -1;
-            rgba_index = pcl::getFieldIndex (*this->input_, "rgb", fields);
-            if (rgba_index == -1)
-            {
-                rgba_index = pcl::getFieldIndex (*this->input_, "rgba", fields);
-            }
-            if (rgba_index >= 0)
-            {
-                point_color_offset_ = static_cast<unsigned char> (fields[rgba_index].offset);
-                cloud_with_color_ = true;
-            }
-            */
+                std::vector<pcl::PCLPointField> fields;
+                int rgba_index = -1;
+                rgba_index = pcl::getFieldIndex (*this->input_, "rgb", fields);
+                if (rgba_index == -1)
+                {
+                    rgba_index = pcl::getFieldIndex (*this->input_, "rgba", fields);
+                }
+                if (rgba_index >= 0)
+                {
+                    point_color_offset_ = static_cast<unsigned char> (fields[rgba_index].offset);
+                    cloud_with_color_ = true;
+                }
+                */
                 // apply encoding configuration
                 cloud_with_color_ &= do_color_encoding_;
 
@@ -515,14 +596,14 @@ namespace pcl
                 point_coder_.initializeEncoding ();
                 point_coder_.setPointCount (static_cast<unsigned int> (cloud_arg->points.size ()));
 
+                std::cout << "i_frame_ : "<< i_frame_ << std::endl;
 
-
-
+                try{
                 // serialize octree
                 if (i_frame_){
                     auto start_serializeTree = chrono::high_resolution_clock::now();
                     // i-frame encoding - encode tree structure without referencing previous buffer
-                    this->serializeTree2 (binary_tree_data_vector_, false);
+                    this->serializeTree (binary_tree_data_vector_, false);
                     printf("------ Done serializeTree i-frame encoding ------ \n ");
                     auto stop_serializeTree = chrono::high_resolution_clock::now();
                     auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);
@@ -532,19 +613,41 @@ namespace pcl
                 else{
                     // p-frame encoding - XOR encoded tree structure
                     auto start_serializeTree = chrono::high_resolution_clock::now();
-                    this->serializeTree2 (binary_tree_data_vector_, true); // change to serializeTree2 <-----
+                    this->serializeTree (binary_tree_data_vector_, true); // change to serializeTree2 <-----
                     printf("------ Done serializeTree  p-frame encoding - XOR ------ \n ");
                     auto stop_serializeTree = chrono::high_resolution_clock::now();
                     auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);
                     PCL_INFO("serializeTree Time:  %ld ms \n",duration_serializeTree);
                 }
+                }catch (std::bad_alloc & exception)
+                {
+                   std::cerr << "bad_alloc detected: " << exception.what() << std::endl;
+                }
 
+                ///////
+                double min_x, min_y, min_z, max_x, max_y, max_z;
+
+                this->getBoundingBox (min_x, min_y, min_z, max_x, max_y, max_z);
+
+                printf("------ Bounding Box ------ \n ");
+
+                printf("min_x: %f\n",min_x);
+                printf("min_y: %f\n",min_y);
+                printf("min_z: %f\n",min_z);
+                printf("max_x: %f\n",max_x);
+                printf("max_y: %f\n",max_y);
+                printf("max_z: %f\n",max_z);
+
+                //////// END MULTI
+                ///
+
+                PCL_INFO("Point count:  %ld \n",this->point_count_);
+                PCL_INFO("Leaf count:  %ld \n",this->getLeafCount());
+                PCL_INFO("Obj count:  %ld \n",this->object_count_);
                 ///////////////// PRINT TO A FILE OCCUPANCY CODE /////////////////////
 
                 // ************** IN BOTTOM ****************
 
-                PCL_INFO("Point count:  %ld \n",this->point_count_);
-                PCL_INFO("Point count:  %ld \n",this->getLeafCount());
                 //////////////////////////////////////////////////////////////////////
                 // write frame header information to stream
                 this->writeFrameHeader (compressed_tree_data_out_arg);
@@ -565,9 +668,10 @@ namespace pcl
                 counter++;
                 if(counter==100){
                     counter=0;
-
                     PCL_INFO(" ---------------- Range Encoder Time:  %ld ms ----------------------- \n",tempos_test_2/100);
                 }
+
+
 
                 // ------------------------------------------------------------------
                 // prepare for next frame
@@ -606,7 +710,12 @@ namespace pcl
                 i_frame_counter_ = 0;
                 i_frame_ = true;
             }
-    }
+        }
+
+
+        // ******************** Tentativa de Multithreading ***********************
+        //*************************************************************************
+
 
 
 
@@ -666,7 +775,7 @@ namespace pcl
 
             // encode binary octree structure
             binary_tree_data_vector_size = binary_tree_data_vector_.size ();
-            printf("Size vector : %d\n",binary_tree_data_vector_size);
+            //printf("Size vector : %d\n",binary_tree_data_vector_size);
             compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&binary_tree_data_vector_size), sizeof (binary_tree_data_vector_size));
             compressed_point_data_len_ += entropy_coder_.encodeCharVectorToStream (binary_tree_data_vector_,
                                                                                    compressed_tree_data_out_arg);
@@ -723,8 +832,191 @@ namespace pcl
 
 
 
-        };
+        }
 
+        //***************************** test BB *********************************************
+        //***************************** test BB *********************************************
+
+        void addPointsFromInputCloud_2(){
+            size_t i;
+              printf("addPointsFromInputCloud_2\n");
+              if (this->indices_)
+              {
+                for (std::vector<int>::const_iterator current = this->indices_->begin (); current != this->indices_->end (); ++current)
+                {
+                  assert( (*current>=0) && (*current < static_cast<int> (this->input_->points.size ())));
+
+                  if (isFinite (this->input_->points[*current]))
+                  {
+                    // add points to octree
+                    this->addPointIdx_2 (*current);
+                  }
+                }
+              }
+              else
+              {
+                for (i = 0; i < this->input_->points.size (); i++)
+                {
+                  if (isFinite (this->input_->points[i]))
+                  {
+                    // add points to octree
+                    this->addPointIdx_2 (static_cast<unsigned int> (i));
+                  }
+                }
+              }
+        }
+
+        void addPointIdx_2 (const int point_idx_arg){
+            OctreeKey key;
+
+              assert (point_idx_arg < static_cast<int> (this->input_->points.size ()));
+
+
+              const PointT& point = this->input_->points[point_idx_arg];
+              printf("*************************************************\n");
+              printf("Point ID: %d | (%f, %f , %f)\n",point_idx_arg,point.x,point.y,point.z);
+              // make sure bounding box is big enough
+              this->adoptBoundingBoxToPoint_2 (point);
+
+
+             printf(" ------------ BB ------------\n");
+             printf("MIN: %f , %f , %f\n",this->min_x_,this->min_y_,this->min_z_);
+             printf("MAX: %f , %f , %f\n",this->max_x_,this->max_y_,this->max_z_);
+             printf(" ----------------------------\n");
+              // generate key
+              this->genOctreeKeyforPoint (point, key);
+             printf("Key: %f, %f, %f\n",key.x,key.y,key.z);
+
+              LeafNode* leaf_node;
+              BranchNode* parent_branch_of_leaf_node;
+              unsigned int depth_mask = this->createLeafRecursive_2(key, this->depth_mask_ ,this->root_node_, leaf_node, parent_branch_of_leaf_node);
+
+              // printf("Depth mask: %d\n", depth_mask);
+              //printf("dynamic_depth_enabled_: %d\n", this->dynamic_depth_enabled_); // <--- 0 ;
+              if (this->dynamic_depth_enabled_ && depth_mask)
+              {
+                // get amount of objects in leaf container
+                size_t leaf_obj_count = (*leaf_node)->getSize ();
+
+                while  (leaf_obj_count>=this->max_objs_per_leaf_ && depth_mask)
+                {
+                  // index to branch child
+
+                  unsigned char child_idx = key.getChildIdxWithDepthMask (depth_mask*2);
+                  //printf("Point: (%f , %f , %f ) | Child idx: %x \n",key.x,key.y,key.z,child_idx);
+                  this->expandLeafNode (leaf_node,
+                                  parent_branch_of_leaf_node,
+                                  child_idx,
+                                  depth_mask);
+
+                  depth_mask = this->createLeafRecursive_2 (key, this->depth_mask_ ,this->root_node_, leaf_node, parent_branch_of_leaf_node);
+                  leaf_obj_count = (*leaf_node)->getSize ();
+                }
+
+              }
+
+              (*leaf_node)->addPointIndex (point_idx_arg);
+              printf("*************************************************\n");
+        }
+
+        void
+        adoptBoundingBoxToPoint_2 (const PointT& point_idx_arg){
+
+             const float minValue = std::numeric_limits<float>::epsilon ();
+             // increase octree size until point fits into bounding box
+             while (true)
+             {
+               bool bLowerBoundViolationX = (point_idx_arg.x < this->min_x_);
+               bool bLowerBoundViolationY = (point_idx_arg.y < this->min_y_);
+               bool bLowerBoundViolationZ = (point_idx_arg.z < this->min_z_);
+
+               bool bUpperBoundViolationX = (point_idx_arg.x >= this->max_x_);
+               bool bUpperBoundViolationY = (point_idx_arg.y >= this->max_y_);
+               bool bUpperBoundViolationZ = (point_idx_arg.z >= this->max_z_);
+
+               // do we violate any bounds?
+               if (bLowerBoundViolationX || bLowerBoundViolationY || bLowerBoundViolationZ || bUpperBoundViolationX
+                   || bUpperBoundViolationY || bUpperBoundViolationZ || (!(this->bounding_box_defined_)) )
+               {
+                 printf(" ------------ BB violation ------------\n");
+
+                 if (this->bounding_box_defined_)
+                 {
+
+                   double octreeSideLen;
+                   unsigned char child_idx;
+
+
+                   // octree not empty - we add another tree level and thus increase its size by a factor of 2*2*2
+                   child_idx = static_cast<unsigned char> (((!bUpperBoundViolationX) << 2) | ((!bUpperBoundViolationY) << 1)
+                       | ((!bUpperBoundViolationZ)));
+
+
+                   printf("Point: (%f , %f , %f ) | Child idx: %x \n",point_idx_arg.x,point_idx_arg.y,point_idx_arg.z,child_idx);
+
+                   BranchNode* newRootBranch;
+
+                   newRootBranch = new BranchNode();
+                   this->branch_count_++;
+
+                   this->setBranchChildPtr (*newRootBranch, child_idx, this->root_node_);
+
+                   this->root_node_ = newRootBranch;
+
+                   octreeSideLen = static_cast<double> (1 << this->octree_depth_) * this->resolution_;
+                   printf("Octree side len: %f\n", octreeSideLen);
+
+                   if (!bUpperBoundViolationX)
+                     this->min_x_ -= octreeSideLen;
+
+                   if (!bUpperBoundViolationY)
+                     this->min_y_ -= octreeSideLen;
+
+                   if (!bUpperBoundViolationZ)
+                     this->min_z_ -= octreeSideLen;
+
+                   // configure tree depth of octree
+                   this->octree_depth_++;
+                   this->setTreeDepth (this->octree_depth_);
+                   printf("OCtree Depth: %d\n",this->octree_depth_);
+                   // recalculate bounding box width
+                   octreeSideLen = static_cast<double> (1 << this->octree_depth_) * this->resolution_ - minValue;
+                   printf("Octree side len recalc: %f\n", octreeSideLen);
+                   // increase octree bounding box
+                   this->max_x_ = this->min_x_ + octreeSideLen;
+                   this->max_y_ = this->min_y_ + octreeSideLen;
+                   this->max_z_ = this->min_z_ + octreeSideLen;
+                   printf("---------------------------------------\n");
+
+                 }
+                 // bounding box is not defined - set it to point position
+                 else
+                 {
+                   // octree is empty - we set the center of the bounding box to our first pixel
+                   this->min_x_ = point_idx_arg.x - this->resolution_ / 2;
+                   this->min_y_ = point_idx_arg.y - this->resolution_ / 2;
+                   this->min_z_ = point_idx_arg.z - this->resolution_ / 2;
+
+                   this->max_x_ = point_idx_arg.x + this->resolution_ / 2;
+                   this->max_y_ = point_idx_arg.y + this->resolution_ / 2;
+                   this->max_z_ = point_idx_arg.z + this->resolution_ / 2;
+
+                   this->getKeyBitSize ();
+
+                   this->bounding_box_defined_ = true;
+                 }
+
+               }
+               else
+                 // no bound violations anymore - leave while loop
+                 break;
+             }
+        }
+
+
+
+        //***************************** test BB *********************************************
+        //***************************** test BB *********************************************
 
         /** \brief Entropy decoding of input binary stream and output to information vectors
           * \param compressed_tree_data_in_arg: binary input stream

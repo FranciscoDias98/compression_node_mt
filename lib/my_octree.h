@@ -37,21 +37,22 @@ public:
         OctreeNode *children[8];
         OctreeNode *parent; // optional
         bool is_leaf;
-        BoundingBox bound_box;
+        BoundingBox bb;
         unsigned int leafs; // <---- ?????
         std::vector<pcl::PointXYZRGB> points_list;
-        void *usr_val;
+        pcl::PointXYZRGB center;
+
     };
 
     Octree();
     Octree(OctreeNode node,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud);
     ~Octree();
 
+    void calculate_bounds(OctreeNode node);
+    bool build_octree(std::vector<pcl::PointXYZRGB> points, BoundingBox bounds);
+
     OctreeNode *root;
-
-    void calculate_bounds();
-    void build_octree();
-
+    Octree *child[8];
 
 protected:
     double resolution; // NxNxN
@@ -60,6 +61,7 @@ protected:
     unsigned int leaf_count;
     unsigned int branch_count;
     std::vector<pcl::PointXYZRGB> points_vector;
+    pcl::PointXYZRGB **points;
     std::vector<char> bit_patern;
     BoundingBox bounding_box_region;
 

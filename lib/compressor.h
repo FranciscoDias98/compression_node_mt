@@ -2,7 +2,7 @@
 #include <ros/ros.h>
 // PCL specific includes
 #include "octree_pointcloud_compression_2.h"
-#include <octree_pointcloud_compression_2.h>
+//#include <octree_pointcloud_compression_2.h>
 
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -88,12 +88,18 @@ public:
     void compress_octant_6();
     void compress_octant_7();
 
+    //test my_octree functions
+    //void my_addPointsFromInputCloud();
+    //void my_addPointIdx(const int point_idx_arg);
+
 
 
 private:
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud, out_cloud,cluster0,cluster1;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr octree_cloud;
 
-    pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* point_cloud_encoder;
+
+    //pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* point_cloud_encoder;
     stringstream compressed_data; // stringstream to store compressed point cloud
     bool show_statistics;
     pcl::io::compression_Profiles_e compression_profile;
@@ -115,7 +121,7 @@ private:
     vector<pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>*> encoder_vector;
     vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> cluster_vector;
 
-    bool multi_thread;
+    bool multi_thread,test;
     const char* frame_header_identifier ;
 
     ///////
@@ -134,6 +140,10 @@ private:
     float mid_x,mid_y,mid_z;
 
 
+    //pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>::Ptr test_compressor;
+    //hw
+    u64 *ddr_pointer;
+    u_int32_t *hw32_vptr;
 
 
 };

@@ -1,14 +1,22 @@
 #include "compressor.h"
 #include "CompressedPointCloud.h"
 #include "octree_pointcloud_compression_2.h"
+//#include "my_octree.h"
 
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/common.h>
+#include <pcl/octree/octree_pointcloud.h>
+
+//#include <pcl/octree/octree_base.h>
+
+//#include <pcl/point_cloud.h>
+//#include <pcl/point_types.h>
 
 #include <chrono>
 #include <time.h>
 #include <string>
 #include<unistd.h>
+#include <fstream>
 // testes tempos
 unsigned int x = 0;
 unsigned long tempos = 0;
@@ -26,6 +34,7 @@ pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder1;
 
 
+
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder_0;
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder_1;
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder_2;
@@ -37,6 +46,10 @@ pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder_7;
 
 
 vector<pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>> octants_compressor_vec;
+vector<double>x_;
+vector<double>y_;
+vector<double>z_;
+vector<pcl::PointXYZ> points;
 
 
 bool hw;
@@ -50,10 +63,10 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
     unsigned int region_size = 0x10000;
     off_t axi_pbase = 0xA0000000;
-    u_int32_t *hw32_vptr;
-    u64 *ddr_pointer;
+    //u_int32_t *hw32_vptr;
+    //u64 *ddr_pointer;
     int fd;
-    unsigned int ddr_size = 0x060000;
+    unsigned int ddr_size = 0x200000;
     off_t ddr_ptr_base = 0x0F000000; // physical base address
     //Map the physical address into user space getting a virtual address for it
 
@@ -378,18 +391,18 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
     */
 
-    std::vector<uint32_t>configs;
+   //std::vector<uint32_t>configs;
 
-    if(hw){
-        store_occupancy_code_hardware(vector,ddr_pointer);
-        std::cout << " ---------- Occupancy Code stored -----------" << std::endl;
-        usleep(10);
-        configs.push_back(1);
-        configs.push_back(32);
-        configs.push_back(256);
-        write_hardware_registers(configs, hw32_vptr, 0);
-        std::cout << " ----------Write in hw registers -----------" << std::endl;
-    }
+//    if(hw){
+//        store_occupancy_code_hardware(vector,ddr_pointer);
+//        std::cout << " ---------- Occupancy Code stored -----------" << std::endl;
+//        usleep(10);
+//        configs.push_back(1);
+//        configs.push_back(32);
+//        configs.push_back(256);
+//        write_hardware_registers(configs, hw32_vptr, 0);
+//        std::cout << " ----------Write in hw registers -----------" << std::endl;
+//    }
 
     in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     out_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -408,6 +421,8 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     octant_6.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     octant_7.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 
+    octree_cloud.reset(new pcl::PointCloud<pcl::PointXYZ>);
+
 
 
 
@@ -416,12 +431,16 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
 
     /////////////////// added for multihreading
-    multi_thread = true;
+    multi_thread = false;
+    test = false;
     number_threads = 8;
 
     frame_header_identifier= "<PCL-OCT-COMPRESSED>";
 
-    ///////////////////////////////
+
+
+
+
 
     set_compression_profile(); // define compression profile
     spin();
@@ -510,6 +529,8 @@ void Alfa_Pc_Compress::set_compression_profiles_octants()
                         compression_profile_.doColorEncoding,
                         compression_profile_.colorBitResolution);
 
+
+
 }
 
 
@@ -526,7 +547,7 @@ void Alfa_Pc_Compress::set_compression_profile()
 
     show_statistics = true;
     compression_profile_.pointResolution = 0.01; //
-    compression_profile_.octreeResolution = 0.03; //-----> ALTERAR NESTE!!!!!!!!! voxel size in cubic meters (1m is 0.01 cm)
+    compression_profile_.octreeResolution = 0.04; //-----> ALTERAR NESTE!!!!!!!!! voxel size in cubic meters (1m is 0.01 cm)
     compression_profile_.doVoxelGridDownSampling = true;
     compression_profile_.iFrameRate = 10; // number of prediction frames
     compression_profile_.colorBitResolution = 0;
@@ -554,6 +575,8 @@ void Alfa_Pc_Compress::set_compression_profile()
 
     }
 
+
+
     //octants_compressor_vec[0] = new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>;
 
 
@@ -565,8 +588,25 @@ void Alfa_Pc_Compress::set_compression_profile()
     std::cout << "End Setting Compression Profile" << std::endl;
 }
 
+
+
+
 void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud, const sensor_msgs::PointCloud2ConstPtr& header)
 {
+    std::cout << "Entrei Process Cloud" << std::endl;
+
+    //////// octree test viewer //////////////////////////////////////
+//    octree_cloud->width = input_cloud->size();
+//    octree_cloud->height=1;
+//    octree_cloud->points.resize (octree_cloud->width * octree_cloud->height);
+//    for(int i=0;i<input_cloud->size();i++){
+//        octree_cloud->points[i].x = input_cloud->points[i].x;
+//        octree_cloud->points[i].y = input_cloud->points[i].y;
+//        octree_cloud->points[i].z = input_cloud->points[i].z;
+//    }
+
+//    pcl::io::savePCDFileASCII ("frame1_hdl32.pcd", *octree_cloud);
+    /////////////////////////////////////////////////////////////////
 
     this->in_cloud = input_cloud;
     octant_0->clear();
@@ -578,15 +618,23 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     octant_6->clear();
     octant_7->clear();
 
+    std::cout << "PAssei Clears" << std::endl;
+
     std::stringstream compressed_data;
     output_compressed.header = header->header;
     output_compressed1.header = header->header;
     //this->header = header;
     output_metrics.metrics.clear();
 
+    std::cout << "PAssei stringstream" << std::endl;
+
+    printf("Point Cloud Size: %d\n",input_cloud->size());
+
 
     ROS_INFO("Compressing cloud with frame [%s]\n", input_cloud->header.frame_id.c_str());
     ROS_INFO("Compressing cloud with frame [%d]\n", input_cloud->header.seq);
+
+    std::cout << "PAssei ROS Info" << std::endl;
 
     auto start_exe_time = high_resolution_clock::now();
 
@@ -598,34 +646,10 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
         auto start_divide = high_resolution_clock::now();
         //divide_in_octants_test(input_cloud); // <---------------------- Check Speed ????? divide_in_octants
-        divide_in_octants(input_cloud);
+        divide_in_octants_test(input_cloud);
         auto stop_divide = high_resolution_clock::now();
         auto duration_divide = duration_cast<milliseconds>(stop_divide - start_divide);
         ROS_INFO("------ Octant Division in %ld ms ----- ",duration_divide.count());
-
-
-
-//        octant_0->clear();
-//        octant_1->clear();
-//        octant_2->clear();
-//        octant_3->clear();
-//        octant_4->clear();
-//        octant_5->clear();
-//        octant_6->clear();
-//        octant_7->clear();
-
-
-//        auto start_divide2 = high_resolution_clock::now();
-//        //divide_in_octants_test(input_cloud); // <---------------------- Check Speed ????? divide_in_octants
-//        divide_in_octants_test(input_cloud);
-//        auto stop_divide2 = high_resolution_clock::now();
-//        auto duration_divide2 = duration_cast<milliseconds>(stop_divide2 - start_divide2);
-//        ROS_INFO("------ Octant Division 2 in %ld ms ----- ",duration_divide2.count());
-
-
-
-
-
 
         if(thread_list.size()>1)
         {
@@ -751,7 +775,120 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
 
 
-    }else{
+    }else if(test){
+        printf("Test\n");
+        PointCloudEncoder->getInputCloud();
+        compressed_data.clear();
+        std::cout << "Entrei Test" << std::endl;
+        pcl::PointXYZRGB minPt, maxPt;
+        pcl::getMinMax3D(*input_cloud,minPt,maxPt);
+        //PointCloudEncoder->i_frame_rate_ =0;
+        printf("%f \n",maxPt.x);
+        printf("%f \n",maxPt.y);
+        printf("%f \n",maxPt.z);
+        printf("%f \n",minPt.x);
+        printf("%f \n",minPt.y);
+        printf("%f \n",minPt.z);
+        //PointCloudEncoder->defineBoundingBox(minPt.x,minPt.y,minPt.z,maxPt.x,maxPt.y,maxPt.z);
+        //PointCloudEncoder->encodePointCloud_3(input_cloud,compressed_data);
+
+
+
+        // test octree only //
+        //pcl::octree::OctreeBase<pcl::PointXYZRGB> octree;
+        pcl::octree::OctreePointCloud<pcl::PointXYZRGB> octree_(0.04);
+
+        octree_.setInputCloud(input_cloud);
+        octree_.addPointsFromInputCloud_2();
+
+
+
+
+
+
+
+        output_compressed.header = header->header;
+        output_compressed.data = compressed_data.str();
+        publish_pointcloud(output_compressed);
+
+
+    } else if (hw) {
+
+        //test ( remove this, monitor depth/resolution)
+        // test with 7 points, the same as testbench
+        uint8_t depth = 7;
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_cloud;
+        test_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+        pcl::PointXYZRGB p0,p1,p2,p3,p4,p5,p6;
+
+        p0.x = 2.57;
+        p0.y = -0.42;
+        p0.z = -1.55;
+
+        p1.x = 2.72;
+        p1.y = -0.45;
+        p1.z = -1.55;
+
+        p2.x = 9.93;
+        p2.y = -1.54;
+        p2.z = -1.54;
+
+        p3.x = 2.86;
+        p3.y = -0.45;
+        p3.z = -1.55;
+
+        p4.x = 13.25;
+        p4.y = -2.18;
+        p4.z = -1.57;
+
+        p5.x = 3.02;
+        p5.y = -0.49;
+        p5.z = -1.54;
+
+        p6.x = 16.40;
+        p6.y = -2.71;
+        p6.z = -1.55;
+
+
+
+        test_cloud->push_back(p0);
+        test_cloud->push_back(p1);
+        test_cloud->push_back(p2);
+        test_cloud->push_back(p3);
+        test_cloud->push_back(p4);
+        test_cloud->push_back(p5);
+        test_cloud->push_back(p6);
+
+
+        //store point cloud in Hw
+        auto start_store_hw = std::chrono::high_resolution_clock::now();
+        store_pointcloud_hardware(test_cloud,ddr_pointer);
+        auto stop_store_hw = std::chrono::high_resolution_clock::now();
+        usleep(10);
+
+
+        //octree_core
+        vector<uint32_t> configs;
+        configs.push_back(1);
+        configs.push_back(test_cloud->size());
+        configs.push_back(depth);
+
+         write_hardware_registers(configs, hw32_vptr);
+
+         int hardware_finish = 0;
+         int value = 0;
+         while(!hardware_finish){
+            vector<uint32_t> hardware_result = read_hardware_registers(hw32_vptr, 3);
+            value = hardware_result[2];
+            if(value==1)
+                hardware_finish = 1;
+            else
+                usleep(1);
+            }
+
+    }
+    else{
 
         // compress
         auto start = high_resolution_clock::now();
@@ -761,7 +898,26 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         //divide_in_octants(input_cloud);
         PointCloudEncoder->encodePointCloud_2(input_cloud,compressed_data);
 
+        ////////////// octree tests ////////////////////
+        char *ptr = 0;
 
+        FILE *fp1;
+        fp1 = fopen("Octree_memory.txt", "wb");
+
+        for(int i=0;i<PointCloudEncoder->binary_tree_data_vector_.size();i++){
+            ptr = &PointCloudEncoder->binary_tree_data_vector_[i];
+            fprintf(fp1,"________________________\n");
+            fprintf(fp1,"%i | %x | %x",i,ptr,PointCloudEncoder->binary_tree_data_vector_[i]);
+        }
+        fclose(fp1);
+
+//        for(int i=0;i<PointCloudEncoder->binary_tree_data_vector_.size();i++){
+//            ptr = PointCloudEncoder->binary_tree_data_vector_[i];
+//        }
+
+
+
+        //////////////////////////////////////////////////////
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<milliseconds>(stop - start);
         std::cout << "Fiz Compressao" << std::endl;
@@ -801,6 +957,9 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
     publish_metrics(output_metrics);
 }
+
+
+
 
 
 
@@ -850,6 +1009,7 @@ void Alfa_Pc_Compress::divide_in_octants_test(pcl::PointCloud<pcl::PointXYZRGB>:
      printf("%f \n",mid_x);
      printf("%f \n",mid_y);
      printf("%f \n",mid_z);
+     printf("%d \n",input_cloud->size());
 
 
      // for more exe. time savings, try multithreading in division
@@ -994,6 +1154,7 @@ void Alfa_Pc_Compress::compress_octant(pcl::io::OctreePointCloudCompression<pcl:
     point_cloud_encoder->setInputCloud(octant);
 
     point_cloud_encoder->addPointsFromInputCloud();
+
 
     if( point_cloud_encoder->getLeafCount()>0){
          point_cloud_encoder->cloud_with_color_ = false;
@@ -1640,42 +1801,42 @@ void Alfa_Pc_Compress::exe_time()
 }
 
 
-void Alfa_Pc_Compress::do_Compression(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud)
-{
+//void Alfa_Pc_Compress::do_Compression(pcl::PointCloud<pcl::PointXYZRGB>::Ptr in_cloud)
+//{
 
-    using namespace std::chrono;
+//    using namespace std::chrono;
 
-    std::stringstream compressed_data_;
+//    std::stringstream compressed_data_;
 
-    ROS_INFO("Compressing cloud with frame [%s]", in_cloud->header.frame_id.c_str());
-    this->in_cloud = in_cloud;
+//    ROS_INFO("Compressing cloud with frame [%s]", in_cloud->header.frame_id.c_str());
+//    this->in_cloud = in_cloud;
 
-    auto start = high_resolution_clock::now();
+//    auto start = high_resolution_clock::now();
 
-    //********* compress point cloud ************ //
-    //point_cloud_encoder->setInputCloud(in_cloud);
-
-
-    point_cloud_encoder->encodePointCloud(in_cloud,compressed_data_);
+//    //********* compress point cloud ************ //
+//    //point_cloud_encoder->setInputCloud(in_cloud);
 
 
+//    point_cloud_encoder->encodePointCloud(in_cloud,compressed_data_);
 
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(stop - start);
-    ROS_INFO("Compressing in %ld ms",duration.count());
-    ROS_INFO("Tree depth: %d\n",point_cloud_encoder->getTreeDepth());
 
-    // testes tempos
-    tempos = tempos + duration.count();
-    compressed_data_.seekg(0,ios::end);
-    size_compressed = size_compressed + compressed_data_.tellg();
-    size_original = size_original + static_cast<float> (in_cloud->size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f;
-    x++;
-    //test
-    if(x==100){
-      exe_time();
-    }
-}
+
+//    auto stop = high_resolution_clock::now();
+//    auto duration = duration_cast<milliseconds>(stop - start);
+//    ROS_INFO("Compressing in %ld ms",duration.count());
+//    ROS_INFO("Tree depth: %d\n",point_cloud_encoder->getTreeDepth());
+
+//    // testes tempos
+//    tempos = tempos + duration.count();
+//    compressed_data_.seekg(0,ios::end);
+//    size_compressed = size_compressed + compressed_data_.tellg();
+//    size_original = size_original + static_cast<float> (in_cloud->size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f;
+//    x++;
+//    //test
+//    if(x==100){
+//      exe_time();
+//    }
+//}
 
 
 
@@ -2190,6 +2351,8 @@ void Alfa_Pc_Compress::compress_octant_7()
 
     }
 }
+
+
 
 
 void Alfa_Pc_Compress::run_worker_thread(int thread_number,pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud){

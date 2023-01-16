@@ -4,7 +4,7 @@
 #include <chrono>
 
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_test(new pcl::PointCloud<pcl::PointXYZI>);
-#define RES_MULTIPLIER 10
+#define RES_MULTIPLIER 100
 #define INTENSITY_MULTIPLIER 1000
 
 
@@ -71,11 +71,11 @@ void AlfaNode::cloud_cb(const sensor_msgs::PointCloud2ConstPtr &cloud)
         ROS_ERROR_STREAM("Error in converting ros cloud to pcl cloud: " << e.what());
     }
 
-    std::cout << "Recebi cloud" << std::endl;
+    std::cout << "Recebi cloud\n" << std::endl;
 
     std::cout << (static_cast<float> (pcloud->size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f) << std::endl;
 
-
+    printf("Point Cloud Size: %d\n",pcloud->size());
 
    process_pointcloud(pcloud,cloud);
 
@@ -190,7 +190,7 @@ void AlfaNode::spin()
 
 //   pcloud->header = cloud_test->header;
 
-void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud, u64 *pointer)
+void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZRGB>::Ptr input_cloud, u64 *pointer)
 {
     int pointcloud_index = 0;
     int16_t a16_points[4];
@@ -198,25 +198,25 @@ void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZI>::Ptr in
         a16_points[0] = point.x*RES_MULTIPLIER;
         a16_points[1] = point.y*RES_MULTIPLIER;
         a16_points[2] = point.z*RES_MULTIPLIER;
-        a16_points[3] = point.intensity*INTENSITY_MULTIPLIER;
+        a16_points[3] =0;//point.intensity*INTENSITY_MULTIPLIER;
         memcpy((void*)(pointer+pointcloud_index),a16_points,sizeof(int16_t)*4);
         pointcloud_index++;
     }
 }
 
 
-pcl::PointCloud<pcl::PointXYZI>::Ptr AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
 {
-    pcl::PointCloud<pcl::PointXYZI>::Ptr return_cloud;
-    return_cloud.reset(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr return_cloud;
+    return_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     for (uint i=0; i<size;i++) {
-        pcl::PointXYZI p;
+        pcl::PointXYZRGB p;
         int16_t a16_points[4];
         memcpy((void*)(a16_points), pointer+i,sizeof(int16_t)*4);
         p.x = (a16_points[0])/float(RES_MULTIPLIER);
         p.y = (a16_points[1])/float(RES_MULTIPLIER);
         p.z = (a16_points[2])/float(RES_MULTIPLIER);
-        p.intensity = (a16_points[3])/float(INTENSITY_MULTIPLIER);
+        //p.intensity = (a16_points[3])/float(INTENSITY_MULTIPLIER);
         return_cloud->push_back(p);
         #ifdef DEBUG
 
