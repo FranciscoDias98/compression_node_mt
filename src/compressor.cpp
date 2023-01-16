@@ -799,7 +799,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         pcl::octree::OctreePointCloud<pcl::PointXYZRGB> octree_(0.04);
 
         octree_.setInputCloud(input_cloud);
-        octree_.addPointsFromInputCloud_2();
+        octree_.addPointsFromInputCloud();
 
 
 

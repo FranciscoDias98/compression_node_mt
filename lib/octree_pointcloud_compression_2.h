@@ -41,8 +41,8 @@
 
 #include <pcl/octree/octree2buf_base.h>
 #include <pcl/octree/octree_base.h>
-//#include <pcl/octree/octree_pointcloud.h>
-#include "octree_pointcloud.h"
+#include <pcl/octree/octree_pointcloud.h>
+//#include "octree_pointcloud.h"
 #include <pcl/compression/entropy_range_coder.h>
 #include <pcl/impl/instantiate.hpp>
 #include <pcl/octree/octree_container.h>
