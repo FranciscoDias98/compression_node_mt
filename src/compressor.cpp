@@ -816,7 +816,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
         //test ( remove this, monitor depth/resolution)
         // test with 7 points, the same as testbench
-        uint8_t depth = 7;
+        uint8_t depth = 5;
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_cloud;
         test_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 
@@ -872,8 +872,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         vector<uint32_t> configs;
         configs.push_back(1);
         configs.push_back(test_cloud->size());
+        configs.push_back(0);
         configs.push_back(depth);
-
          write_hardware_registers(configs, hw32_vptr);
 
          int hardware_finish = 0;
