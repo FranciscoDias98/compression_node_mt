@@ -834,19 +834,19 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         p2.y = -1.54;
         p2.z = -1.54;
 
-        p3.x = 2.86;
+        p3.x = -2.86;
         p3.y = -0.45;
         p3.z = -1.55;
 
-        p4.x = 13.25;
+        p4.x = -13.25;
         p4.y = -2.18;
         p4.z = -1.57;
 
-        p5.x = 3.02;
+        p5.x = -3.02;
         p5.y = -0.49;
         p5.z = -1.54;
 
-        p6.x = 16.40;
+        p6.x = -16.40;
         p6.y = -2.71;
         p6.z = -1.55;
 
