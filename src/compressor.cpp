@@ -887,8 +887,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
             value = hardware_result[2];
             if(value==1){
                 hardware_finish = 1;
-                hw_leaf_count = hardware_result[5];
-                hw_branch_count = hardware_result[6];
+                hw_leaf_count = hardware_result[4];
+                hw_branch_count = hardware_result[5];
             }else
                 usleep(1);
         }
@@ -905,10 +905,10 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         cout << "STORE TIME: " << duration_store_hw.count() << "ms" << endl;
         cout << "READ TIME: " << duration_read_hw.count() << "us" << endl;
         printf("Hw Leaf Count: %d\n",hw_leaf_count);
-        printf("Hw Brranch Count: %d\n",hw_branch_count);
+        printf("Hw Branch Count: %d\n",hw_branch_count);
         printf("************ Occ. Code ****************\n");
         for(int i = 0; i<occupancy_code_hw.size();i++){
-            printf("Id: &d | Code: %x \n",i,occupancy_code_hw[i]);
+            printf("Id: %d | Occ. Code: %x \n",i,occupancy_code_hw[i]);
         }
         printf("***************************************\n");
 
