@@ -816,7 +816,11 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
         //test ( remove this, monitor depth/resolution)
         // test with 7 points, the same as testbench
+
         uint8_t depth = 5;
+        uint8_t hw_leaf_count = 0;
+        uint8_t hw_branch_count = 0;
+
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_cloud;
         test_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 
@@ -879,13 +883,34 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
          int hardware_finish = 0;
          int value = 0;
          while(!hardware_finish){
-            vector<uint32_t> hardware_result = read_hardware_registers(hw32_vptr, 3);
+            vector<uint32_t> hardware_result = read_hardware_registers(hw32_vptr, 6);
             value = hardware_result[2];
-            if(value==1)
+            if(value==1){
                 hardware_finish = 1;
-            else
+                hw_leaf_count = hardware_result[5];
+                hw_branch_count = hardware_result[6];
+            }else
                 usleep(1);
-            }
+        }
+
+        vector<unsigned char> occupancy_code_hw;
+        //read hw occ_code
+        auto start_read_hw = std::chrono::high_resolution_clock::now();
+        occupancy_code_hw = read_hardware_pointcloud(ddr_pointer,hw_branch_count);
+        auto stop_read_hw = std::chrono::high_resolution_clock::now();
+        //
+
+        auto duration_store_hw = std::chrono::duration_cast<std::chrono::milliseconds>(stop_store_hw - start_store_hw);
+        auto duration_read_hw = std::chrono::duration_cast<std::chrono::microseconds>(stop_read_hw - start_read_hw);
+        cout << "STORE TIME: " << duration_store_hw.count() << "ms" << endl;
+        cout << "READ TIME: " << duration_read_hw.count() << "us" << endl;
+        printf("Hw Leaf Count: %d\n",hw_leaf_count);
+        printf("Hw Brranch Count: %d\n",hw_branch_count);
+        printf("************ Occ. Code ****************\n");
+        for(int i = 0; i<occupancy_code_hw.size();i++){
+            printf("Id: &d | Code: %x \n",i,occupancy_code_hw[i]);
+        }
+        printf("***************************************\n");
 
     }
     else{

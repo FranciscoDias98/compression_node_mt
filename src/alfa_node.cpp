@@ -2,6 +2,7 @@
 #include <thread>
 #include <unistd.h>
 #include <chrono>
+#include <cmath>
 
 pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_test(new pcl::PointCloud<pcl::PointXYZI>);
 #define RES_MULTIPLIER 100
@@ -205,11 +206,32 @@ void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZRGB>::Ptr 
 }
 
 
-pcl::PointCloud<pcl::PointXYZRGB>::Ptr AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
+std::vector<unsigned char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
 {
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr return_cloud;
-    return_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
-    for (uint i=0; i<size;i++) {
+    //pcl::PointCloud<pcl::PointXYZRGB>::Ptr return_cloud;
+    //return_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    std::vector<unsigned char> hw_occupancy_code;
+    uint32_t counter = 0;
+
+    int ddr_blocks = ceil((size*8)/64);
+    
+    for(int i=0;i<ddr_blocks;i++){
+        uint8_t a8_branchs[8];
+        memcpy((void*)(a8_branchs), pointer+i,sizeof(uint8_t)*8);
+        for(uint8_t j=0;i<8;j++){
+            if(counter < size){
+                hw_occupancy_code.push_back(a8_branchs[j]);
+                counter++;
+            }else{
+                break;
+            }
+        }
+    }
+
+    return hw_occupancy_code;
+
+    /* for (uint i=0; i<size;i++) {
         pcl::PointXYZRGB p;
         int16_t a16_points[4];
         memcpy((void*)(a16_points), pointer+i,sizeof(int16_t)*4);
@@ -225,7 +247,7 @@ pcl::PointCloud<pcl::PointXYZRGB>::Ptr AlfaNode::read_hardware_pointcloud(u64 *p
         #endif
 
     }
-    return return_cloud;
+    return return_cloud; */
 }
 
 vector<uint32_t> AlfaNode::read_hardware_registers(uint32_t *pointer, uint size)
