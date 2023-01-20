@@ -219,7 +219,7 @@ std::vector<unsigned char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint
     for(int i=0;i<ddr_blocks;i++){
         uint8_t a8_branchs[8];
         memcpy((void*)(a8_branchs), pointer+i,sizeof(uint8_t)*8);
-        for(uint8_t j=0;i<8;j++){
+        for(uint8_t j=7;i>=0;j--){
             if(counter < size){
                 hw_occupancy_code.push_back(a8_branchs[j]);
                 counter++;
