@@ -214,17 +214,26 @@ std::vector<unsigned char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint
 
     std::vector<unsigned char> hw_occupancy_code;
     uint32_t counter = 0;
+    int number_bits = 0;
+    int ddr_blocks = 0;
+    double blocks = 0
 
-    int ddr_blocks = ceil((size*8)/64);
+    number_bits = size*8;
+    blocks = (number_bits/64);
+    ddr_blocks = ceil(blocks);
     
+    printf("DDR Bits to Read: %d",number_bits);
+    printf("DDR Blocks: %f",blocks);
+    printf("DDR Blocks to Read: %d",ddr_blocks);
+
     for(int i=0;i<ddr_blocks;i++){
         uint8_t a8_branchs[8];
         memcpy((void*)(a8_branchs), pointer+i,sizeof(uint8_t)*8);
-        for(uint8_t j=7;j>=0;j--){
+        for(int j=7;j>=0;j--){
             if(counter < size){
                 hw_occupancy_code.push_back(a8_branchs[j]);
                 counter++; 
-            }else{
+            }else{ 
                 break;
             }
         }
