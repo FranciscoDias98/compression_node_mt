@@ -214,12 +214,12 @@ std::vector<unsigned char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint
 
     std::vector<unsigned char> hw_occupancy_code;
     uint32_t counter = 0;
-    int number_bits = 0;
+    float number_bits = 0;
     int ddr_blocks = 0;
     float blocks = 0;
 
     number_bits = size*8;
-    blocks = (float)(number_bits/64);
+    blocks = number_bits/64.0;
     ddr_blocks = ceil(blocks);
 
     printf("DDR Bits to Read: %d\n",number_bits);
