@@ -878,7 +878,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         configs.push_back(test_cloud->size());
         configs.push_back(0);
         configs.push_back(depth);
-         write_hardware_registers(configs, hw32_vptr);
+        write_hardware_registers(configs, hw32_vptr);
 
          int hardware_finish = 0;
          int value = 0;
@@ -892,6 +892,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
             }else
                 usleep(1);
         }
+
 
         vector<unsigned char> occupancy_code_hw;
         //read hw occ_code
