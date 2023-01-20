@@ -216,15 +216,15 @@ std::vector<unsigned char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint
     uint32_t counter = 0;
     int number_bits = 0;
     int ddr_blocks = 0;
-    double blocks = 0;
+    float blocks = 0;
 
     number_bits = size*8;
-    blocks = (number_bits/64);
+    blocks = (float)(number_bits/64);
     ddr_blocks = ceil(blocks);
 
-    printf("DDR Bits to Read: %d",number_bits);
-    printf("DDR Blocks: %f",blocks);
-    printf("DDR Blocks to Read: %d",ddr_blocks);
+    printf("DDR Bits to Read: %d\n",number_bits);
+    printf("DDR Blocks: %f\n",blocks);
+    printf("DDR Blocks to Read: %d\n",ddr_blocks);
 
     for(int i=0;i<ddr_blocks;i++){
         uint8_t a8_branchs[8];
