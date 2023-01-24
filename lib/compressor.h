@@ -145,5 +145,8 @@ private:
     u64 *ddr_pointer;
     u_int32_t *hw32_vptr;
 
+    int size_test;
+    int depth_test;
+
 
 };

@@ -824,7 +824,17 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_cloud;
         test_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 
+        for(int i=0;i<size_test;i++){
+             pcl::PointXYZRGB point = (*input_cloud)[i];
+             test_cloud->push_back(point);
+        }
+
+
+
+
         pcl::PointXYZRGB p0,p1,p2,p3,p4,p5,p6;
+
+
 
         p0.x = 2.57;
         p0.y = -0.42;
@@ -856,13 +866,9 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
 
 
-        test_cloud->push_back(p0);
-        test_cloud->push_back(p1);
-        test_cloud->push_back(p2);
-        test_cloud->push_back(p3);
-        test_cloud->push_back(p4);
-        test_cloud->push_back(p5);
-        test_cloud->push_back(p6);
+        test_cloud->points[0] = p0;
+        test_cloud->points[1] = p1;
+        test_cloud->points[2] = p2;
 
 
         //store point cloud in Hw
@@ -1783,7 +1789,8 @@ void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure:
 
     multi_thread = configs.configurations[1].config;
     //delete(PointCloudEncoder);
-
+    size_test = configs.configurations[2].config;
+    depth_test = configs.configurations[3].config;
     if(multi_thread){
         set_compression_profile();
         PointCloudEncoder_0->setResolution(configs.configurations[0].config);
@@ -1797,6 +1804,7 @@ void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure:
     }else{
         set_compression_profile();
         PointCloudEncoder->setResolution(configs.configurations[0].config);
+
     }
 
 }

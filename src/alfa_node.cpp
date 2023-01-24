@@ -128,33 +128,26 @@ void AlfaNode::ticker_thread()
         newPing.node_name= NODE_NAME;
         newPing.node_type = NODE_TYPE;
         newPing.config_service_name = string(NODE_NAME)+"_settings";
-        newPing.config_tag = "DIOR software example";
+        newPing.config_tag = "ALFA-Pc example";
         alfa_msg::ConfigMessage parameter1,parameter2,parameter3,parameter4,parameter5,parameter6;
 
-        parameter1.config = 7;
-        parameter1.config_name = "Filter Selector";
+        parameter1.config = 0.03;
+        parameter1.config_name = "Resolution";
 
-        parameter2.config = 0.1;
-        parameter2.config_name = "Minimal Search Radius:";
+        parameter2.config = 0;
+        parameter2.config_name = "Multithreading";
 
-        parameter3.config = 0.2;
-        parameter3.config_name = "Multiplication Parameter:";
+        parameter3.config = 5;
+        parameter3.config_name = "Hw test - Number of points";
 
-        parameter4.config = 5;
-        parameter4.config_name = "Neighbor Threshold";
-
-        parameter5.config = 0.005;
-        parameter5.config_name = "Intensity Treshold Parameter:";
-
-        parameter6.config = 4;
-        parameter6.config_name = "Multithreading: Number of threads";
+        parameter4.config = 10;
+        parameter4.config_name = "Octreee Depth Hw";
 
         newPing.default_configurations.push_back(parameter1);
         newPing.default_configurations.push_back(parameter2);
         newPing.default_configurations.push_back(parameter3);
         newPing.default_configurations.push_back(parameter4);
-        newPing.default_configurations.push_back(parameter5);
-        newPing.default_configurations.push_back(parameter6);
+
 
         newPing.current_status = node_status;
         alive_publisher.publish(newPing);
@@ -222,7 +215,7 @@ std::vector<unsigned char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint
     blocks = number_bits/64.0;
     ddr_blocks = ceil(blocks);
 
-    printf("DDR Bits to Read: %d\n",number_bits);
+    printf("DDR Bits to Read: %f\n",number_bits);
     printf("DDR Blocks: %f\n",blocks);
     printf("DDR Blocks to Read: %d\n",ddr_blocks);
 
