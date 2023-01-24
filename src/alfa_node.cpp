@@ -137,7 +137,7 @@ void AlfaNode::ticker_thread()
         parameter2.config = 0;
         parameter2.config_name = "Multithreading";
 
-        parameter3.config = 5;
+        parameter3.config = 32;
         parameter3.config_name = "Hw test - Number of points";
 
         parameter4.config = 10;

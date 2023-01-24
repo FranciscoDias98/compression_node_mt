@@ -883,7 +883,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         configs.push_back(1);
         configs.push_back(test_cloud->size());
         configs.push_back(0);
-        configs.push_back(depth);
+        configs.push_back(depth_test);
         write_hardware_registers(configs, hw32_vptr);
 
          int hardware_finish = 0;
@@ -898,7 +898,9 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
             }else
                 usleep(1);
         }
-
+        printf("************ Compressing Point Cloud ****************\n");
+        printf("Number of Points: %d\n",test_cloud->size());
+        printf("Octree Depth: %d\n",depth_test);
 
         vector<unsigned char> occupancy_code_hw;
         //read hw occ_code
