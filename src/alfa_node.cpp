@@ -194,6 +194,7 @@ void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZRGB>::Ptr 
         a16_points[2] = point.z*RES_MULTIPLIER;
         a16_points[3] =0;//point.intensity*INTENSITY_MULTIPLIER;
         memcpy((void*)(pointer+pointcloud_index),a16_points,sizeof(int16_t)*4);
+        printf("Point %d | (%d , %d , %d )\n",pointcloud_index,a16_points[0],a16_points[1],a16_points[2]);
         pointcloud_index++;
     }
 }
