@@ -817,9 +817,9 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         //test ( remove this, monitor depth/resolution)
         // test with 7 points, the same as testbench
 
-        uint8_t depth = 5;
-        uint8_t hw_leaf_count = 0;
-        uint8_t hw_branch_count = 0;
+        uint32_t depth = 5;
+        uint32_t hw_leaf_count = 0;
+        uint32_t hw_branch_count = 0;
 
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_cloud;
         test_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -853,6 +853,9 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         test_cloud->points[0] = p0;
         test_cloud->points[1] = p1;
         test_cloud->points[2] = p2;
+
+
+
 
 
         //store point cloud in Hw
@@ -900,6 +903,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         // decompress test
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud;
 
+        FILE *fp;
+        fp = fopen("occ_code_hw.txt","wb");
 
         //PointCloudEncoder->decodePointCloud(occupancy_code_hw,output_cloud);
 
@@ -912,6 +917,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         printf("************ Occ. Code ****************\n");
         for(int i = 0; i<occupancy_code_hw.size();i++){
             printf("Id: %d | Occ. Code: %x \n",i,occupancy_code_hw[i]);
+            fprintf(fp,"Id: %d | Occ. Code: %x \n",i,occupancy_code_hw[i]);
         }
         printf("***************************************\n");
 
