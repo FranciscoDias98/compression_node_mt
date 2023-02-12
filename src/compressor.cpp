@@ -6,6 +6,8 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/common/common.h>
 #include <pcl/octree/octree_pointcloud.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
 
 //#include <pcl/octree/octree_base.h>
 
@@ -78,331 +80,13 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     else
         ROS_INFO("NAO ENTROU NO NMAP :(");
 
-    /*
-    int16_t a16_points[4];
-    a16_points[0] = 0x0201;
-    a16_points[1] = 0x0103;
-    a16_points[2] = 0x0302;
-    a16_points[3] = 0x0201;
-    memcpy((void*)(ddr_pointer), a16_points,sizeof(int32_t)*2);
-    a16_points[0] = 0x0103;
-    a16_points[1] = 0x0302;
-    a16_points[2] = 0x0201;
-    a16_points[3] = 0x0103;
-    memcpy((void*)(ddr_pointer+1),a16_points,sizeof(int16_t)*4);
-    a16_points[0] = 0x0302;
-    a16_points[1] = 0x0000;
-    a16_points[2] = 0x0000;
-    a16_points[3] = 0x0000;
-    memcpy((void*)(ddr_pointer+2),a16_points,sizeof(int16_t)*4);
-    a16_points[0] = 0x0000;
-    a16_points[1] = 0x0000;
-    a16_points[2] = 0x0000;
-    a16_points[3] = 0x0000;
-    memcpy((void*)(ddr_pointer+3),a16_points,sizeof(int16_t)*4);
-
-    sleep(1);
-
-    vector<uint32_t> two_matrix;
-    two_matrix.push_back(1);
-    // two_matrix.push_back(0x02030102);
-    // two_matrix.push_back(0x03010203);
-    // two_matrix.push_back(0x01020301);
-    // two_matrix.push_back(0x02030000);
-    //Write in Hw
-    write_hardware_registers(two_matrix, hw32_vptr);
-
-    //Read in Hw
-
-    while(!hw32_vptr[1]){
-      ROS_INFO("WAITING");
-    }
-    int32_t array[2];
-    for(int i=0; i<5; i++){
-      memcpy((void*)(array), ddr_pointer+i,sizeof(int16_t)*4);
-      printf("%X\n", array[0]);
-      printf("%X\n", array[1]);
-    }
-
-    */
     //--------------------------------------------------------//
 
 
 
     vector<char>vector;
 
-    /*
-    vector.push_back(0x88); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa8); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa0); //
-    vector.push_back(0x80); //
-    vector.push_back(0x40); //
-    vector.push_back(0xc0); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x02); //
-    vector.push_back(0x08); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x40); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x08); //
-    vector.push_back(0x20); //
-    vector.push_back(0x10); //
-    vector.push_back(0x32); //
-    vector.push_back(0x50); //
-    vector.push_back(0x14); // 25
-    vector.push_back(0x50); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x10); //
-    vector.push_back(0x80); //
-    vector.push_back(0x01); //
-    vector.push_back(0x01); //
-    vector.push_back(0x10); //
-    vector.push_back(0x01); //
-    vector.push_back(0x80); //
-    vector.push_back(0x10); //
-    vector.push_back(0x22); //
-    vector.push_back(0x02); //
-    vector.push_back(0x0a); //
-    vector.push_back(0x10); //
-    vector.push_back(0x20); //
-    vector.push_back(0x40); //
-    vector.push_back(0x20); //
-    vector.push_back(0xa0); // 50
-    vector.push_back(0x88); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa8); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa0); //
-    vector.push_back(0x80); //
-    vector.push_back(0x40); //
-    vector.push_back(0xc0); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x02); //
-    vector.push_back(0x08); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x40); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x08); //
-    vector.push_back(0x20); //
-    vector.push_back(0x10); //
-    vector.push_back(0x32); //
-    vector.push_back(0x50); //
-    vector.push_back(0x14); // 25
-    vector.push_back(0x50); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x10); //
-    vector.push_back(0x80); //
-    vector.push_back(0x01); //
-    vector.push_back(0x01); //
-    vector.push_back(0x10); //
-    vector.push_back(0x01); //
-    vector.push_back(0x80); //
-    vector.push_back(0x10); //
-    vector.push_back(0x22); //
-    vector.push_back(0x02); //
-    vector.push_back(0x0a); //
-    vector.push_back(0x10); //
-    vector.push_back(0x20); //
-    vector.push_back(0x40); //
-    vector.push_back(0x20); //
-    vector.push_back(0xa0); // 50
-    vector.push_back(0x88); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa8); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa0); //
-    vector.push_back(0x80); //
-    vector.push_back(0x40); //
-    vector.push_back(0xc0); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x02); //
-    vector.push_back(0x08); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x40); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x08); //
-    vector.push_back(0x20); //
-    vector.push_back(0x10); //
-    vector.push_back(0x32); //
-    vector.push_back(0x50); //
-    vector.push_back(0x14); // 25
-    vector.push_back(0x50); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x10); //
-    vector.push_back(0x80); //
-    vector.push_back(0x01); //
-    vector.push_back(0x01); //
-    vector.push_back(0x10); //
-    vector.push_back(0x01); //
-    vector.push_back(0x80); //
-    vector.push_back(0x10); //
-    vector.push_back(0x22); //
-    vector.push_back(0x02); //
-    vector.push_back(0x0a); //
-    vector.push_back(0x10); //
-    vector.push_back(0x20); //
-    vector.push_back(0x40); //
-    vector.push_back(0x20); //
-    vector.push_back(0xa0); // 50
-    vector.push_back(0x88); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa8); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa0); //
-    vector.push_back(0x80); //
-    vector.push_back(0x40); //
-    vector.push_back(0xc0); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x02); //
-    vector.push_back(0x08); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x40); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x08); //
-    vector.push_back(0x20); //
-    vector.push_back(0x10); //
-    vector.push_back(0x32); //
-    vector.push_back(0x50); //
-    vector.push_back(0x14); // 25
-    vector.push_back(0x50); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x10); //
-    vector.push_back(0x80); //
-    vector.push_back(0x01); //
-    vector.push_back(0x01); //
-    vector.push_back(0x10); //
-    vector.push_back(0x01); //
-    vector.push_back(0x80); //
-    vector.push_back(0x10); //
-    vector.push_back(0x22); //
-    vector.push_back(0x02); //
-    vector.push_back(0x0a); //
-    vector.push_back(0x10); //
-    vector.push_back(0x20); //
-    vector.push_back(0x40); //
-    vector.push_back(0x20); //
-    vector.push_back(0xa0); // 50
-    vector.push_back(0x88); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa8); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa0); //
-    vector.push_back(0x80); //
-    vector.push_back(0x40); //
-    vector.push_back(0xc0); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x02); //
-    vector.push_back(0x08); //
-    vector.push_back(0x40); //
-    vector.push_back(0x80); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x40); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x08); //
-    vector.push_back(0x20); //
-    vector.push_back(0x10); //
-    vector.push_back(0x32); //
-    vector.push_back(0x50); //
-    vector.push_back(0x14); // 25
-    vector.push_back(0x50); //
-    vector.push_back(0x01); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x04); //
-    vector.push_back(0x20); //
-    vector.push_back(0x04); //
-    vector.push_back(0x40); //
-    vector.push_back(0x10); //
-    vector.push_back(0x80); //
-    vector.push_back(0x01); //
-    vector.push_back(0x01); //
-    vector.push_back(0x10); //
-    vector.push_back(0x01); //
-    vector.push_back(0x80); //
-    vector.push_back(0x10); //
-    vector.push_back(0x22); //
-    vector.push_back(0x02); //
-    vector.push_back(0x0a); //
-    vector.push_back(0x10); //
-    vector.push_back(0x20); //
-    vector.push_back(0x40); //
-    vector.push_back(0x20); //
-    vector.push_back(0xa0); // 50
-    vector.push_back(0x88); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa8); //
-    vector.push_back(0xa0); //
-    vector.push_back(0xa0); //
-    vector.push_back(0x80); //
 
-    */
-
-   //std::vector<uint32_t>configs;
-
-//    if(hw){
-//        store_occupancy_code_hardware(vector,ddr_pointer);
-//        std::cout << " ---------- Occupancy Code stored -----------" << std::endl;
-//        usleep(10);
-//        configs.push_back(1);
-//        configs.push_back(32);
-//        configs.push_back(256);
-//        write_hardware_registers(configs, hw32_vptr, 0);
-//        std::cout << " ----------Write in hw registers -----------" << std::endl;
-//    }
 
     in_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     out_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -458,7 +142,7 @@ void Alfa_Pc_Compress::set_compression_profiles_octants()
 
     show_statistics = true;
     compression_profile_.pointResolution = 0.01; //
-    compression_profile_.octreeResolution = 0.03; //-----> ALTERAR NESTE!!!!!!!!! voxel size in cubic meters (1m is 0.01 cm)
+    compression_profile_.octreeResolution = 0.5; //-----> ALTERAR NESTE!!!!!!!!! voxel size in cubic meters (1m is 0.01 cm)
     compression_profile_.doVoxelGridDownSampling = true;
     compression_profile_.iFrameRate = 10; // number of prediction frames
     compression_profile_.colorBitResolution = 0;
@@ -547,9 +231,9 @@ void Alfa_Pc_Compress::set_compression_profile()
 
     show_statistics = true;
     compression_profile_.pointResolution = 0.01; //
-    compression_profile_.octreeResolution = 0.04; //-----> ALTERAR NESTE!!!!!!!!! voxel size in cubic meters (1m is 0.01 cm)
+    compression_profile_.octreeResolution = 0.03; //-----> ALTERAR NESTE!!!!!!!!! voxel size in cubic meters (1m is 0.01 cm)
     compression_profile_.doVoxelGridDownSampling = true;
-    compression_profile_.iFrameRate = 10; // number of prediction frames
+    compression_profile_.iFrameRate = 0; // number of prediction frames
     compression_profile_.colorBitResolution = 0;
     compression_profile_.doColorEncoding = false;
 
@@ -621,6 +305,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     std::cout << "PAssei Clears" << std::endl;
 
     std::stringstream compressed_data;
+    //std::stringstream compressed_data_2;
     output_compressed.header = header->header;
     output_compressed1.header = header->header;
     //this->header = header;
@@ -777,39 +462,164 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
     }else if(test){
         printf("Test\n");
-        PointCloudEncoder->getInputCloud();
+
+
+        // ************ Encode Point Cloud - Sw *********************
+
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_cloud;
+        test_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_output_cloud;
+        test_output_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+        for(int i=0;i<32000;i++){
+             pcl::PointXYZRGB point = (*input_cloud)[i];
+             test_cloud->push_back(point);
+        }
+        //pcl::io::savePCDFile("test_pcd.pcd", *test_cloud);
+
+
+        //pcl::io::savePCDFile("test_pcd.pcd", *test_cloud);
+
+        //PointCloudEncoder1->setResolution(0.125);
+        //PointCloudEncoder->setTreeDepth(13);
+        //PointCloudEncoder1->defineBoundingBox(-128,-128,-128,128,128,128);
+        //PointCloudEncoder1->encodePointCloud_2(test_cloud,compressed_data);
+
+        // %%%%%%%%%%%%%%%%%%%%% PRINT OCTREE OCC. CODE %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+//        FILE *fp_binary_tree;
+//        fp_binary_tree = fopen("binary_tree_bfs_sw_.txt","wb");
+//        for(int i=0;i<PointCloudEncoder1->binary_tree_data_vector_.size();i++){
+//            fprintf(fp_binary_tree,"%x   | ",(unsigned char)(PointCloudEncoder1->binary_tree_data_vector_[i]));
+//            for (int j = sizeof(char) * 7; j >= 0; j--)
+//                    fprintf(fp_binary_tree,"%d", ((PointCloudEncoder1->binary_tree_data_vector_[i]) & (1 << j)) >> j );
+//            fprintf(fp_binary_tree,"\n");
+
+//        }
+//        fclose(fp_binary_tree);
+        // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        // %%%%%%%%%%%%%%%%%%%%% PRINT OCTREE STRUCTURE %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        //printf("Leaf Count: %d\n",PointCloudEncoder1->getLeafCount());
+        //PointCloudEncoder1->decodePointCloud(compressed_data,test_output_cloud);
+        //pcl::io::savePCDFile("output_cloud_test_normal_sw.pcd", *test_output_cloud);
+
+
+
+
+
+        // **********************************************************
+
+
+        //PointCloudEncoder->getInputCloud();
         compressed_data.clear();
         std::cout << "Entrei Test" << std::endl;
-        pcl::PointXYZRGB minPt, maxPt;
-        pcl::getMinMax3D(*input_cloud,minPt,maxPt);
-        //PointCloudEncoder->i_frame_rate_ =0;
-        printf("%f \n",maxPt.x);
-        printf("%f \n",maxPt.y);
-        printf("%f \n",maxPt.z);
-        printf("%f \n",minPt.x);
-        printf("%f \n",minPt.y);
-        printf("%f \n",minPt.z);
-        //PointCloudEncoder->defineBoundingBox(minPt.x,minPt.y,minPt.z,maxPt.x,maxPt.y,maxPt.z);
-        //PointCloudEncoder->encodePointCloud_3(input_cloud,compressed_data);
+
+        // decompress test
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud;
+        output_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+        //********** START DECODING OCCUPANCY CODE ***************
+
+        FILE *fp_occ_test;
+        fp_occ_test = fopen("occ_code_test.txt","rb");
+        std::string line;
+
+        std::ifstream file("occ_code_test.txt");
+        vector<char> occupancy_code_test;
+        while (getline(file, line)) {
+              char value = (char) std::stoi(line, nullptr, 16);
+              occupancy_code_test.push_back(value);
+            }
+        file.close();
 
 
+        PointCloudEncoder->setInputCloud(test_cloud);
+        printf("Input Cloud Test Size: %d\n",test_cloud->size());
 
-        // test octree only //
-        //pcl::octree::OctreeBase<pcl::PointXYZRGB> octree;
-        pcl::octree::OctreePointCloud<pcl::PointXYZRGB> octree_(0.04);
+        // increase frameID
+        PointCloudEncoder->frame_ID_++;
+        if (!PointCloudEncoder->do_voxel_grid_enDecoding_)
+        {
+         PointCloudEncoder->point_count_data_vector_.clear ();
+         PointCloudEncoder->point_count_data_vector_.reserve (test_cloud->points.size ());
+        }
+        // initialize point encoding
+        PointCloudEncoder->point_coder_.initializeEncoding ();
+        PointCloudEncoder->point_coder_.setPointCount (static_cast<unsigned int> (test_cloud->points.size ()));
+        PointCloudEncoder->binary_tree_data_vector_ = occupancy_code_test;
+        printf("Binary Tree Size: %d\n",PointCloudEncoder->binary_tree_data_vector_.size());
+        printf("Point Count %d \n",PointCloudEncoder->point_count_);
+        printf("Leaf Count %d \n",PointCloudEncoder->getLeafCount());
+        printf("Object Count %d \n",PointCloudEncoder->object_count_);
+        PointCloudEncoder->setResolution(0.125);
+        my_write_frame_header_hw(compressed_data);
 
-        octree_.setInputCloud(input_cloud);
-        octree_.addPointsFromInputCloud();
-
-
-
-
-
-
+        PointCloudEncoder->entropyEncoding(compressed_data);
+        PointCloudEncoder->switchBuffers ();
 
         output_compressed.header = header->header;
         output_compressed.data = compressed_data.str();
         publish_pointcloud(output_compressed);
+
+
+        // %%%%%%%%%%%%%%%%%% DECODE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//        PointCloudEncoder->switchBuffers();
+//        PointCloudEncoder->setOutputCloud(output_cloud);
+//        PointCloudEncoder->cloud_with_color_ = false;
+//        PointCloudEncoder->deleteTree();
+//        PointCloudEncoder->defineBoundingBox(-256,-256,-256,256,256,256);
+//        printf("Leaf Count: %d\n",PointCloudEncoder->getLeafCount());
+//        PointCloudEncoder->point_coder_.setPrecision (static_cast<float> (0.01));
+//        PointCloudEncoder->point_coder_.initializeDecoding ();
+//        PointCloudEncoder->output_->points.clear ();
+//        PointCloudEncoder->output_->points.reserve (static_cast<std::size_t> (PointCloudEncoder->point_count_));
+//        PointCloudEncoder->setResolution(0.06);
+//        PointCloudEncoder->setTreeDepth(13);
+//        PointCloudEncoder->deserializeTree(PointCloudEncoder->binary_tree_data_vector_,false);
+//        // assign point cloud properties
+//        PointCloudEncoder->output_->height = 1;
+//        PointCloudEncoder->output_->width = static_cast<uint32_t>(output_cloud->points.size ());
+//        PointCloudEncoder->output_->is_dense = false;
+
+
+
+//        printf("%%%%%%%%%%%%%%%%%% RESULTS %%%%%%%%%%%%%%%%%%%%%%%\n");
+//        printf("Input Cloud Size Points: %d\n",test_cloud->size());
+
+//        printf(" --> SW:\n");
+//        printf("     Output Cloud Size: %d Points\n",test_output_cloud->size());
+
+//        printf(" --> HW:\n");
+//        printf("     Output Cloud Test Size: %d Points\n",output_cloud->size());
+
+
+
+
+
+//        pcl::PointCloud<pcl::PointXYZRGB>::Ptr marosca;
+//        marosca.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+//        for (int i=0;i<output_cloud->size();i++) {
+//            pcl::PointXYZRGB point = (*output_cloud)[i];
+//            point.x = (point.x)*0.5;
+//            point.y = (point.y)*0.5;
+//            point.z = (point.z)*0.5;
+//            marosca->push_back(point);
+//        }
+
+//        pcl::io::savePCDFile("output_cloud_hw.pcd", *output_cloud);
+//        pcl::io::savePCDFile("marosca_hw.pcd", *marosca);
+
+
+
+
+        //output_compressed.header = header->header;
+        //output_compressed.data = compressed_data.str();
+        //publish_pointcloud(output_compressed);
 
 
     } else if (hw) {
@@ -830,34 +640,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         }
 
 
-
-
-        pcl::PointXYZRGB p0,p1,p2,p3,p4,p5,p6;
-
-
-
-        p0.x = 2.57;
-        p0.y = -0.42;
-        p0.z = -1.55;
-
-        p1.x = 2.72;
-        p1.y = -0.45;
-        p1.z = -1.55;
-
-        p2.x = -9.93;
-        p2.y = -1.54;
-        p2.z = -1.54;
-
-
-
-        test_cloud->points[0] = p0;
-        test_cloud->points[1] = p1;
-        test_cloud->points[2] = p2;
-
-
-
-
-
+        // ************ Encode Point Cloud - Hw *********************
         //store point cloud in Hw
         printf("************ Storing Point Cloud ****************\n");
         auto start_store_hw = std::chrono::high_resolution_clock::now();
@@ -865,8 +648,6 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         auto stop_store_hw = std::chrono::high_resolution_clock::now();
         usleep(10);
         printf("***************************************\n");
-
-
 
         //octree_core
         vector<uint32_t> configs;
@@ -892,16 +673,13 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         printf("Number of Points: %d\n",test_cloud->size());
         printf("Octree Depth: %d\n",depth_test);
 
-        vector<unsigned char> occupancy_code_hw;
+        vector<char> occupancy_code_hw;
         //read hw occ_code
         auto start_read_hw = std::chrono::high_resolution_clock::now();
         occupancy_code_hw = read_hardware_pointcloud(ddr_pointer,hw_branch_count);
         auto stop_read_hw = std::chrono::high_resolution_clock::now();
         //
 
-
-        // decompress test
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud;
 
         FILE *fp;
         fp = fopen("occ_code_hw.txt","wb");
@@ -914,12 +692,69 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         cout << "READ TIME: " << duration_read_hw.count() << "us" << endl;
         printf("Hw Leaf Count: %d\n",hw_leaf_count);
         printf("Hw Branch Count: %d\n",hw_branch_count);
-        printf("************ Occ. Code ****************\n");
-        for(int i = 0; i<occupancy_code_hw.size();i++){
-            printf("Id: %d | Occ. Code: %x \n",i,occupancy_code_hw[i]);
-            fprintf(fp,"Id: %d | Occ. Code: %x \n",i,occupancy_code_hw[i]);
-        }
+//        printf("************ Occ. Code ****************\n");
+//        for(int i = 0; i<occupancy_code_hw.size();i++){
+//            //printf("Id: %d | Occ. Code: %x \n",i,occupancy_code_hw[i]);
+//            fprintf(fp,"Id: %d | Occ. Code: %x \n",i,occupancy_code_hw[i]);
+//        }
+//        fclose(fp);
         printf("***************************************\n");
+
+
+        // decompress test
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud;
+
+        //********** START DECODING OCCUPANCY CODE ***************
+
+        PointCloudEncoder->setInputCloud(test_cloud);
+        printf("Input Cloud Test Size: %d\n",test_cloud->size());
+
+        // increase frameID
+        PointCloudEncoder->frame_ID_++;
+        if (!PointCloudEncoder->do_voxel_grid_enDecoding_)
+        {
+         PointCloudEncoder->point_count_data_vector_.clear ();
+         PointCloudEncoder->point_count_data_vector_.reserve (test_cloud->points.size ());
+        }
+        // initialize point encoding
+        PointCloudEncoder->point_coder_.initializeEncoding ();
+        PointCloudEncoder->point_coder_.setPointCount (static_cast<unsigned int> (test_cloud->points.size ()));
+        PointCloudEncoder->binary_tree_data_vector_ = occupancy_code_hw;
+        printf("Binary Tree Size: %d\n",PointCloudEncoder->binary_tree_data_vector_.size());
+        printf("Point Count %d \n",PointCloudEncoder->point_count_);
+        printf("Leaf Count %d \n",PointCloudEncoder->getLeafCount());
+        printf("Object Count %d \n",PointCloudEncoder->object_count_);
+
+        switch (depth_test) {
+            case 15: PointCloudEncoder->setResolution(0.03);
+                break;
+            case 14: PointCloudEncoder->setResolution(0.06);
+                break;
+            case 13: PointCloudEncoder->setResolution(0.125);
+                break;
+            case 12: PointCloudEncoder->setResolution(0.25);
+                break;
+            case 11: PointCloudEncoder->setResolution(0.5);
+                break;
+            case 10: PointCloudEncoder->setResolution(1);
+
+        }
+
+        //PointCloudEncoder->setResolution(0.125);
+
+        my_write_frame_header_hw(compressed_data);
+
+        PointCloudEncoder->entropyEncoding(compressed_data);
+        PointCloudEncoder->switchBuffers ();
+
+        output_compressed.header = header->header;
+        output_compressed.data = compressed_data.str();
+        publish_pointcloud(output_compressed);
+        //**********************************************
+
+
+
+        // **********************************************************
 
     }
     else{
@@ -928,6 +763,10 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         auto start = high_resolution_clock::now();
 
         //do_Compression(output_cloud);
+
+
+
+
 
         //divide_in_octants(input_cloud);
         PointCloudEncoder->encodePointCloud_2(input_cloud,compressed_data);
@@ -992,6 +831,61 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     publish_metrics(output_metrics);
 }
 
+void Alfa_Pc_Compress::my_write_frame_header_hw(ostream &compressed_tree_data_out_arg)
+{
+    compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (frame_header_identifier), strlen (frame_header_identifier));
+    // encode point cloud header id
+    compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder->frame_ID_), sizeof (PointCloudEncoder->frame_ID_));
+    // encode frame type (I/P-frame)
+    compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder->i_frame_), sizeof (PointCloudEncoder->i_frame_));
+
+
+    if (PointCloudEncoder->i_frame_)
+    {
+      printf("i_frame\n");
+      double min_x, min_y, min_z, max_x, max_y, max_z;
+      double octree_resolution;
+      unsigned char color_bit_depth;
+      double point_resolution;
+
+      // get current configuration
+      octree_resolution = PointCloudEncoder->getResolution ();
+      color_bit_depth  = PointCloudEncoder->color_coder_.getBitDepth ();
+      point_resolution= PointCloudEncoder->point_coder_.getPrecision ();
+      //PointCloudEncoder->getBoundingBox (min_x, min_y, min_z, max_x, max_y, max_z);
+      min_x = -250;
+      min_y = -250;
+      min_z = -250;
+      max_x = 250;
+      max_y = 250;
+      max_z = 250;
+
+
+      // encode amount of points
+      if (PointCloudEncoder->do_voxel_grid_enDecoding_)
+        PointCloudEncoder->point_count_ = PointCloudEncoder->getLeafCount(); // LEAF COUNT HW ??
+      else
+        PointCloudEncoder->point_count_ = PointCloudEncoder->object_count_; // Point cloud points
+
+      // encode coding configuration
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder->do_voxel_grid_enDecoding_), sizeof (PointCloudEncoder->do_voxel_grid_enDecoding_));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&cloud_with_color_), sizeof (cloud_with_color_));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&PointCloudEncoder->point_count_), sizeof (PointCloudEncoder->point_count_));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&octree_resolution), sizeof (octree_resolution));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&color_bit_depth), sizeof (color_bit_depth));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&point_resolution), sizeof (point_resolution));
+
+      // encode octree bounding box
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_x), sizeof (min_x));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_y), sizeof (min_y));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&min_z), sizeof (min_z));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_x), sizeof (max_x));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_y), sizeof (max_y));
+      compressed_tree_data_out_arg.write (reinterpret_cast<const char*> (&max_z), sizeof (max_z));
+    }
+
+
+}
 
 
 
@@ -2387,6 +2281,8 @@ void Alfa_Pc_Compress::compress_octant_7()
 
     }
 }
+
+
 
 
 

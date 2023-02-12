@@ -90,7 +90,10 @@ public:
 
     //test my_octree functions
     //void my_addPointsFromInputCloud();
-    //void my_addPointIdx(const int point_idx_arg);
+    //void my_addPointIdx(const int point_idx_arg)
+
+    // Hw functions
+    void my_write_frame_header_hw(std::ostream& compressed_tree_data_out_arg);
 
 
 

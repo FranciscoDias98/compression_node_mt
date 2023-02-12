@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Software License Agreement (BSD License)
  *
  *  Point Cloud Library (PCL) - www.pointclouds.org
@@ -296,6 +296,27 @@ namespace pcl
             PCL_INFO("addPointsFromInputCloud Time:  %ld ms \n",duration_addPointsFromInputCloud);
             
 
+            FILE *fp_octree_structure;
+            fp_octree_structure = fopen("octree_strucutre_test_sw.txt","wb");
+            for (auto it = this->begin(); it != this->end(); ++it) {
+
+
+
+                if (it.isBranchNode()) {
+                    fprintf(fp_octree_structure,"Branch Node | %x | ",(unsigned char)it.getNodeConfiguration());
+                    for (int i = sizeof(char) * 7; i >= 0; i--)
+                            fprintf(fp_octree_structure,"%d", ((it.getNodeConfiguration()) & (1 << i)) >> i );
+                    fprintf(fp_octree_structure," | %d \n",it.getCurrentOctreeDepth());
+                }
+                if (it.isLeafNode()) {
+                    fprintf(fp_octree_structure,"Leaf Node   | %x | ",(unsigned char)it.getNodeConfiguration());
+                    for (int i = sizeof(char) * 7; i >= 0; i--)
+                            fprintf(fp_octree_structure,"%d", ((it.getNodeConfiguration()) & (1 << i)) >> i );
+                    fprintf(fp_octree_structure," | %d \n",it.getCurrentOctreeDepth());
+                }
+            }
+            fclose(fp_octree_structure);
+
 
             // octree info //
 //            FILE *fp;
@@ -543,6 +564,27 @@ namespace pcl
 //            }
 //            fclose(fp);
 
+            FILE *fp_octree_structure;
+            fp_octree_structure = fopen("octree_strucutre_test_sw.txt","wb");
+            for (auto it = this->begin(); it != this->end(); ++it) {
+
+
+
+                if (it.isBranchNode()) {
+                    fprintf(fp_octree_structure,"Branch Node | %x | ",it.getNodeConfiguration());
+                    for (int i = sizeof(char) * 7; i >= 0; i--)
+                            fprintf(fp_octree_structure,"%d", ((it.getNodeConfiguration()) & (1 << i)) >> i );
+                    fprintf(fp_octree_structure," | %d \n",it.getCurrentOctreeDepth());
+                }
+                if (it.isLeafNode()) {
+                    fprintf(fp_octree_structure,"Leaf Node   | %x | ",it.getNodeConfiguration());
+                    for (int i = sizeof(char) * 7; i >= 0; i--)
+                            fprintf(fp_octree_structure,"%d", ((it.getNodeConfiguration()) & (1 << i)) >> i );
+                    fprintf(fp_octree_structure," | %d \n",it.getCurrentOctreeDepth());
+                }
+            }
+            fclose(fp_octree_structure);
+
             // make sure cloud contains points
             if (this->leaf_count_>0) {
 
@@ -603,7 +645,7 @@ namespace pcl
                 if (i_frame_){
                     auto start_serializeTree = chrono::high_resolution_clock::now();
                     // i-frame encoding - encode tree structure without referencing previous buffer
-                    this->serializeTree (binary_tree_data_vector_, false);
+                    this->serializeTree2 (binary_tree_data_vector_, false);
                     printf("------ Done serializeTree i-frame encoding ------ \n ");
                     auto stop_serializeTree = chrono::high_resolution_clock::now();
                     auto duration_serializeTree = chrono::duration_cast<chrono::milliseconds>(stop_serializeTree - start_serializeTree);

@@ -200,13 +200,13 @@ void AlfaNode::store_pointcloud_hardware(pcl::PointCloud<pcl::PointXYZRGB>::Ptr 
 }
 
 
-std::vector<unsigned char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
+std::vector<char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
 {
     //pcl::PointCloud<pcl::PointXYZRGB>::Ptr return_cloud;
     //return_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     
 
-    std::vector<unsigned char> hw_occupancy_code;
+    std::vector<char> hw_occupancy_code;
     uint32_t counter = 0;
     float number_bits = 0;
     int ddr_blocks = 0;
@@ -221,7 +221,7 @@ std::vector<unsigned char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint
     printf("DDR Blocks to Read: %d\n",ddr_blocks);
 
     for(int i=0;i<ddr_blocks;i++){
-        uint8_t a8_branchs[8];
+        char a8_branchs[8];
         memcpy((void*)(a8_branchs), pointer+i,sizeof(uint8_t)*8);
         for(int j=7;j>=0;j--){
             if(counter < size){
