@@ -223,22 +223,30 @@ std::vector<char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
     for(int i=0;i<ddr_blocks;i++){
         uint8_t a8_branchs[8];
         memcpy((void*)(a8_branchs), pointer+i,sizeof(uint8_t)*8);
-        for(int j=7;j>=0;j--){
+        hw_occupancy_code.push_back(a8_branchs[7]);
+        hw_occupancy_code.push_back(a8_branchs[6]);
+        hw_occupancy_code.push_back(a8_branchs[5]);
+        hw_occupancy_code.push_back(a8_branchs[4]);
+        hw_occupancy_code.push_back(a8_branchs[3]);
+        hw_occupancy_code.push_back(a8_branchs[2]);
+        hw_occupancy_code.push_back(a8_branchs[1]);
+        hw_occupancy_code.push_back(a8_branchs[0]);
+          /* for(int j=7;j>=0;j--){
             if(counter < size){
                 hw_occupancy_code.push_back(a8_branchs[j]);
                 counter++; 
             }else{ 
                 break;
             }
-        }
+        } */
     }
 
 //    63                             0
 //    [4d][80][80][88][80][80][80][20]
 
-    for(int i = 0;i<hw_occupancy_code.size();i++){
-        printf("%x\n",hw_occupancy_code[i]);
-    }
+//    for(int i = 0;i<hw_occupancy_code.size();i++){
+//        printf("%x\n",hw_occupancy_code[i]);
+//    }
 
     return hw_occupancy_code;
 

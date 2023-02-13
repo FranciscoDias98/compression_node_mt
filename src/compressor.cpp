@@ -303,6 +303,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     octant_7->clear();
 
     std::cout << "PAssei Clears" << std::endl;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_cloud;
+    test_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 
     std::stringstream compressed_data;
     //std::stringstream compressed_data_2;
@@ -631,8 +633,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         uint32_t hw_leaf_count = 0;
         uint32_t hw_branch_count = 0;
 
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_cloud;
-        test_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
 
         for(int i=0;i<size_test;i++){
              pcl::PointXYZRGB point = (*input_cloud)[i];
@@ -647,7 +648,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         store_pointcloud_hardware(test_cloud,ddr_pointer);
         auto stop_store_hw = std::chrono::high_resolution_clock::now();
         usleep(10);
-        printf("***************************************\n");
+        printf("*************************************************\n");
 
         //octree_core
         vector<uint32_t> configs;
@@ -698,7 +699,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 //            fprintf(fp,"Id: %d | Occ. Code: %x \n",i,occupancy_code_hw[i]);
 //        }
 //        fclose(fp);
-        printf("***************************************\n");
+        printf("*************************************************\n");
 
 
         // decompress test
@@ -743,9 +744,19 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         //PointCloudEncoder->setResolution(0.125);
 
         my_write_frame_header_hw(compressed_data);
-
+        auto start_read_rangeEncoder = std::chrono::high_resolution_clock::now();
         PointCloudEncoder->entropyEncoding(compressed_data);
+        auto stop_read_rangeEncoder = std::chrono::high_resolution_clock::now();
         PointCloudEncoder->switchBuffers ();
+
+
+        auto duration_compress = std::chrono::duration_cast<std::chrono::milliseconds>(stop_read_rangeEncoder - start_read_rangeEncoder);
+        cout << "Compress TIME: " << duration_compress.count() << "ms" << endl;
+
+
+
+
+
 
         output_compressed.header = header->header;
         output_compressed.data = compressed_data.str();
@@ -827,6 +838,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     ROS_INFO("------ Compressing in %ld ms ----- ",duration_exe_time.count());
 
     std::cout << "Passed publish_pointcloud " << std::endl;
+    metrics(compressed_data,test_cloud,duration_exe_time.count());
 
     publish_metrics(output_metrics);
 }
