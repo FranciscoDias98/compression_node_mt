@@ -116,7 +116,7 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
     /////////////////// added for multihreading
     multi_thread = false;
-    test = false;
+    test = true;
     number_threads = 8;
 
     frame_header_identifier= "<PCL-OCT-COMPRESSED>";
@@ -471,7 +471,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr test_output_cloud;
         test_output_cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 
-        for(int i=0;i<32000;i++){
+        for(int i=0;i<16000;i++){
              pcl::PointXYZRGB point = (*input_cloud)[i];
              test_cloud->push_back(point);
         }
@@ -556,63 +556,63 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         printf("Leaf Count %d \n",PointCloudEncoder->getLeafCount());
         printf("Object Count %d \n",PointCloudEncoder->object_count_);
         PointCloudEncoder->setResolution(0.125);
-        my_write_frame_header_hw(compressed_data);
+        //my_write_frame_header_hw(compressed_data);
 
-        PointCloudEncoder->entropyEncoding(compressed_data);
+        //PointCloudEncoder->entropyEncoding(compressed_data);
         PointCloudEncoder->switchBuffers ();
 
-        output_compressed.header = header->header;
-        output_compressed.data = compressed_data.str();
-        publish_pointcloud(output_compressed);
+        //output_compressed.header = header->header;
+        //output_compressed.data = compressed_data.str();
+        //publish_pointcloud(output_compressed);
 
 
         // %%%%%%%%%%%%%%%%%% DECODE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//        PointCloudEncoder->switchBuffers();
-//        PointCloudEncoder->setOutputCloud(output_cloud);
-//        PointCloudEncoder->cloud_with_color_ = false;
-//        PointCloudEncoder->deleteTree();
-//        PointCloudEncoder->defineBoundingBox(-256,-256,-256,256,256,256);
-//        printf("Leaf Count: %d\n",PointCloudEncoder->getLeafCount());
-//        PointCloudEncoder->point_coder_.setPrecision (static_cast<float> (0.01));
-//        PointCloudEncoder->point_coder_.initializeDecoding ();
-//        PointCloudEncoder->output_->points.clear ();
-//        PointCloudEncoder->output_->points.reserve (static_cast<std::size_t> (PointCloudEncoder->point_count_));
-//        PointCloudEncoder->setResolution(0.06);
-//        PointCloudEncoder->setTreeDepth(13);
-//        PointCloudEncoder->deserializeTree(PointCloudEncoder->binary_tree_data_vector_,false);
-//        // assign point cloud properties
-//        PointCloudEncoder->output_->height = 1;
-//        PointCloudEncoder->output_->width = static_cast<uint32_t>(output_cloud->points.size ());
-//        PointCloudEncoder->output_->is_dense = false;
+        PointCloudEncoder->switchBuffers();
+        PointCloudEncoder->setOutputCloud(output_cloud);
+        PointCloudEncoder->cloud_with_color_ = false;
+        PointCloudEncoder->deleteTree();
+        PointCloudEncoder->defineBoundingBox(-256,-256,-256,256,256,256);
+        printf("Leaf Count: %d\n",PointCloudEncoder->getLeafCount());
+        PointCloudEncoder->point_coder_.setPrecision (static_cast<float> (0.01));
+        PointCloudEncoder->point_coder_.initializeDecoding ();
+        PointCloudEncoder->output_->points.clear ();
+        PointCloudEncoder->output_->points.reserve (static_cast<std::size_t> (PointCloudEncoder->point_count_));
+        PointCloudEncoder->setResolution(0.06);
+        PointCloudEncoder->setTreeDepth(13);
+        PointCloudEncoder->deserializeTree(PointCloudEncoder->binary_tree_data_vector_,false);
+        // assign point cloud properties
+        PointCloudEncoder->output_->height = 1;
+        PointCloudEncoder->output_->width = static_cast<uint32_t>(output_cloud->points.size ());
+        PointCloudEncoder->output_->is_dense = false;
 
 
 
-//        printf("%%%%%%%%%%%%%%%%%% RESULTS %%%%%%%%%%%%%%%%%%%%%%%\n");
-//        printf("Input Cloud Size Points: %d\n",test_cloud->size());
+        printf("%%%%%%%%%%%%%%%%%% RESULTS %%%%%%%%%%%%%%%%%%%%%%%\n");
+        printf("Input Cloud Size Points: %d\n",test_cloud->size());
 
-//        printf(" --> SW:\n");
-//        printf("     Output Cloud Size: %d Points\n",test_output_cloud->size());
+        printf(" --> SW:\n");
+        printf("     Output Cloud Size: %d Points\n",test_output_cloud->size());
 
-//        printf(" --> HW:\n");
-//        printf("     Output Cloud Test Size: %d Points\n",output_cloud->size());
-
-
+        printf(" --> HW:\n");
+        printf("     Output Cloud Test Size: %d Points\n",output_cloud->size());
 
 
 
-//        pcl::PointCloud<pcl::PointXYZRGB>::Ptr marosca;
-//        marosca.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
 
-//        for (int i=0;i<output_cloud->size();i++) {
-//            pcl::PointXYZRGB point = (*output_cloud)[i];
-//            point.x = (point.x)*0.5;
-//            point.y = (point.y)*0.5;
-//            point.z = (point.z)*0.5;
-//            marosca->push_back(point);
-//        }
 
-//        pcl::io::savePCDFile("output_cloud_hw.pcd", *output_cloud);
-//        pcl::io::savePCDFile("marosca_hw.pcd", *marosca);
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr marosca;
+        marosca.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+        for (int i=0;i<output_cloud->size();i++) {
+            pcl::PointXYZRGB point = (*output_cloud)[i];
+            point.x = (point.x)*0.5;
+            point.y = (point.y)*0.5;
+            point.z = (point.z)*0.5;
+            marosca->push_back(point);
+        }
+
+        pcl::io::savePCDFile("output_cloud_hw.pcd", *output_cloud);
+        pcl::io::savePCDFile("marosca_hw.pcd", *marosca);
 
 
 
@@ -681,8 +681,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         //
 
 
-        FILE *fp;
-        fp = fopen("occ_code_hw.txt","wb");
+        //FILE *fp;
+        //fp = fopen("occ_code_hw.txt","wb");
 
         //PointCloudEncoder->decodePointCloud(occupancy_code_hw,output_cloud);
 

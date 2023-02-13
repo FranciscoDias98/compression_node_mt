@@ -233,6 +233,10 @@ std::vector<char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
         }
     }
 
+    for(int i = 0;i<hw_occupancy_code.size();i++){
+        printf("%x\n",hw_occupancy_code[i]);
+    }
+
     return hw_occupancy_code;
 
     /* for (uint i=0; i<size;i++) {
