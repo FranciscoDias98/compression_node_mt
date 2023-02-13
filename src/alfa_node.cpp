@@ -221,7 +221,7 @@ std::vector<char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
     printf("DDR Blocks to Read: %d\n",ddr_blocks);
 
     for(int i=0;i<ddr_blocks;i++){
-        char a8_branchs[8];
+        uint8_t a8_branchs[8];
         memcpy((void*)(a8_branchs), pointer+i,sizeof(uint8_t)*8);
         for(int j=7;j>=0;j--){
             if(counter < size){
@@ -232,6 +232,9 @@ std::vector<char> AlfaNode::read_hardware_pointcloud(u64 *pointer, uint size)
             }
         }
     }
+
+//    63                             0
+//    [4d][80][80][88][80][80][80][20]
 
     for(int i = 0;i<hw_occupancy_code.size();i++){
         printf("%x\n",hw_occupancy_code[i]);
