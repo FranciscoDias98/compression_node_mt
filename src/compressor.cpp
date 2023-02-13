@@ -116,7 +116,7 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
 
     /////////////////// added for multihreading
     multi_thread = false;
-    test = true;
+    test = false;
     number_threads = 8;
 
     frame_header_identifier= "<PCL-OCT-COMPRESSED>";
