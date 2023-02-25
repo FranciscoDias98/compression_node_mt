@@ -54,7 +54,7 @@ vector<double>z_;
 vector<pcl::PointXYZ> points;
 
 
-bool hw;
+
 
 
 Alfa_Pc_Compress::Alfa_Pc_Compress()
@@ -71,11 +71,12 @@ Alfa_Pc_Compress::Alfa_Pc_Compress()
     unsigned int ddr_size = 0x200000;
     off_t ddr_ptr_base = 0x0F000000; // physical base address
     //Map the physical address into user space getting a virtual address for it
+    hw = 0;
 
     if((fd = open("/dev/mem", O_RDWR | O_SYNC)) != -1) {
         ddr_pointer = (u64 *)mmap(NULL, ddr_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, ddr_ptr_base);
         hw32_vptr = (u_int32_t *)mmap(NULL, region_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, axi_pbase);
-        hw = true;
+        hw = 1;
     }
     else
         ROS_INFO("NAO ENTROU NO NMAP :(");
@@ -638,22 +639,23 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         for(int i=0;i<size_test;i++){
              pcl::PointXYZRGB point = (*input_cloud)[i];
              test_cloud->push_back(point);
-        }
+        } //  40532
 
 
         // ************ Encode Point Cloud - Hw *********************
         //store point cloud in Hw
         printf("************ Storing Point Cloud ****************\n");
         auto start_store_hw = std::chrono::high_resolution_clock::now();
-        store_pointcloud_hardware(test_cloud,ddr_pointer);
+        store_pointcloud_hardware(input_cloud,ddr_pointer);
         auto stop_store_hw = std::chrono::high_resolution_clock::now();
         usleep(10);
         printf("*************************************************\n");
 
         //octree_core
         vector<uint32_t> configs;
+        configs.clear();
         configs.push_back(1);
-        configs.push_back(test_cloud->size());
+        configs.push_back(input_cloud->size());
         configs.push_back(0);
         configs.push_back(depth_test);
         write_hardware_registers(configs, hw32_vptr);
@@ -671,7 +673,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
                 usleep(1);
         }
         printf("************ Compressing Point Cloud ****************\n");
-        printf("Number of Points: %d\n",test_cloud->size());
+        printf("Number of Points: %d\n",input_cloud->size());
         printf("Octree Depth: %d\n",depth_test);
 
         vector<char> occupancy_code_hw;
@@ -707,8 +709,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
         //********** START DECODING OCCUPANCY CODE ***************
 
-        PointCloudEncoder->setInputCloud(test_cloud);
-        printf("Input Cloud Test Size: %d\n",test_cloud->size());
+        PointCloudEncoder->setInputCloud(input_cloud);
+        printf("Input Cloud Test Size: %d\n",input_cloud->size());
 
         // increase frameID
         PointCloudEncoder->frame_ID_++;
@@ -719,7 +721,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         }
         // initialize point encoding
         PointCloudEncoder->point_coder_.initializeEncoding ();
-        PointCloudEncoder->point_coder_.setPointCount (static_cast<unsigned int> (test_cloud->points.size ()));
+        PointCloudEncoder->point_coder_.setPointCount (static_cast<unsigned int> (input_cloud->points.size ()));
         PointCloudEncoder->binary_tree_data_vector_ = occupancy_code_hw;
         printf("Binary Tree Size: %d\n",PointCloudEncoder->binary_tree_data_vector_.size());
         printf("Point Count %d \n",PointCloudEncoder->point_count_);

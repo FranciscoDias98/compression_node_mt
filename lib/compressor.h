@@ -150,6 +150,7 @@ private:
 
     int size_test;
     int depth_test;
+    bool hw;
 
 
 };
