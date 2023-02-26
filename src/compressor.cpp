@@ -752,7 +752,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
         auto duration_store_hw = std::chrono::duration_cast<std::chrono::milliseconds>(stop_store_hw - start_store_hw);
         auto duration_read_hw = std::chrono::duration_cast<std::chrono::microseconds>(stop_read_hw - start_read_hw);
-        auto duration_octree_hw = std::chrono::duration_cast<std::chrono::microseconds>(octree_stop_hw - octree_start_hw);
+        auto duration_octree_hw = std::chrono::duration_cast<std::chrono::milliseconds>(octree_stop_hw - octree_start_hw);
         auto duration_compress = std::chrono::duration_cast<std::chrono::milliseconds>(stop_read_rangeEncoder - start_read_rangeEncoder);
 
         cout << "STORE TIME: " << duration_store_hw.count() << "ms" << endl;
