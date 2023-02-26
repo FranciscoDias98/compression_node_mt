@@ -658,12 +658,15 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         configs.push_back(input_cloud->size());
         configs.push_back(0);
         configs.push_back(depth_test);
+        configs.push_back(0);
+        configs.push_back(0);
+        configs.push_back(th_reg);
         auto octree_start_hw = std::chrono::high_resolution_clock::now();
         write_hardware_registers(configs, hw32_vptr);
          int hardware_finish = 0;
          int value = 0;
          while(!hardware_finish){
-            vector<uint32_t> hardware_result = read_hardware_registers(hw32_vptr, 6);
+            vector<uint32_t> hardware_result = read_hardware_registers(hw32_vptr, 7);
             value = hardware_result[2];
             if(value==1){
                 hardware_finish = 1;
@@ -1719,6 +1722,7 @@ void Alfa_Pc_Compress::update_compressionSettings(const alfa_msg::AlfaConfigure:
     //delete(PointCloudEncoder);
     size_test = configs.configurations[2].config;
     depth_test = configs.configurations[3].config;
+    th_reg = configs.configurations[4].config;
     if(multi_thread){
         set_compression_profile();
         PointCloudEncoder_0->setResolution(configs.configurations[0].config);
