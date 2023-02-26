@@ -636,10 +636,10 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
 
 
-        for(int i=0;i<size_test;i++){
-             pcl::PointXYZRGB point = (*input_cloud)[i];
-             test_cloud->push_back(point);
-        } //  40532
+//        for(int i=0;i<size_test;i++){
+//             pcl::PointXYZRGB point = (*input_cloud)[i];
+//             test_cloud->push_back(point);
+//        } //  40532
 
 
         // ************ Encode Point Cloud - Hw *********************
@@ -658,8 +658,8 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         configs.push_back(input_cloud->size());
         configs.push_back(0);
         configs.push_back(depth_test);
+        auto octree_start_hw = std::chrono::high_resolution_clock::now();
         write_hardware_registers(configs, hw32_vptr);
-
          int hardware_finish = 0;
          int value = 0;
          while(!hardware_finish){
@@ -672,6 +672,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
             }else
                 usleep(1);
         }
+        auto octree_stop_hw = std::chrono::high_resolution_clock::now();
         printf("************ Compressing Point Cloud ****************\n");
         printf("Number of Points: %d\n",input_cloud->size());
         printf("Octree Depth: %d\n",depth_test);
@@ -689,10 +690,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
 
         //PointCloudEncoder->decodePointCloud(occupancy_code_hw,output_cloud);
 
-        auto duration_store_hw = std::chrono::duration_cast<std::chrono::milliseconds>(stop_store_hw - start_store_hw);
-        auto duration_read_hw = std::chrono::duration_cast<std::chrono::microseconds>(stop_read_hw - start_read_hw);
-        cout << "STORE TIME: " << duration_store_hw.count() << "ms" << endl;
-        cout << "READ TIME: " << duration_read_hw.count() << "us" << endl;
+
         printf("Hw Leaf Count: %d\n",hw_leaf_count);
         printf("Hw Branch Count: %d\n",hw_branch_count);
 //        printf("************ Occ. Code ****************\n");
@@ -717,7 +715,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         if (!PointCloudEncoder->do_voxel_grid_enDecoding_)
         {
          PointCloudEncoder->point_count_data_vector_.clear ();
-         PointCloudEncoder->point_count_data_vector_.reserve (test_cloud->points.size ());
+         PointCloudEncoder->point_count_data_vector_.reserve (input_cloud->points.size ());
         }
         // initialize point encoding
         PointCloudEncoder->point_coder_.initializeEncoding ();
@@ -752,11 +750,17 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         PointCloudEncoder->switchBuffers ();
 
 
+        auto duration_store_hw = std::chrono::duration_cast<std::chrono::milliseconds>(stop_store_hw - start_store_hw);
+        auto duration_read_hw = std::chrono::duration_cast<std::chrono::microseconds>(stop_read_hw - start_read_hw);
+        auto duration_octree_hw = std::chrono::duration_cast<std::chrono::microseconds>(octree_stop_hw - octree_start_hw);
         auto duration_compress = std::chrono::duration_cast<std::chrono::milliseconds>(stop_read_rangeEncoder - start_read_rangeEncoder);
-        cout << "Compress TIME: " << duration_compress.count() << "ms" << endl;
 
+        cout << "STORE TIME: " << duration_store_hw.count() << "ms" << endl;
+        cout << "READ TIME: " << duration_read_hw.count() << "us" << endl;
+        cout << "OCTREE + DFS + DDR WRITE TIME: " << duration_octree_hw.count() << "ms" << endl;
+        cout << "RANGE ENCODER TIME: " << duration_compress.count() << "ms" << endl;
 
-
+        print_statistics_octant(PointCloudEncoder);
 
 
 
@@ -839,8 +843,22 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     auto duration_exe_time = duration_cast<milliseconds>(stop_exe_time - start_exe_time);
     ROS_INFO("------ Compressing in %ld ms ----- ",duration_exe_time.count());
 
+    size_original_test = size_original_test + (static_cast<float> (input_cloud->points.size()) * (sizeof (int) + 3.0f * sizeof (float)) / 1024.0f)*1000;
+
+    compressed_data.seekg(0,ios::end);
+    size_compressed_test = size_compressed_test+compressed_data.tellg();
+    tempos_test = tempos_test + duration_exe_time.count();
+    points_second += 1000*input_cloud->points.size() / duration_exe_time.count();
+    x++;
+    if(x==100){
+        x=0;
+        exe_time();
+    }
+    points_second += 1000*input_cloud->points.size() / duration_exe_time.count();
+
+
     std::cout << "Passed publish_pointcloud " << std::endl;
-    metrics(compressed_data,test_cloud,duration_exe_time.count());
+    metrics(compressed_data,input_cloud,duration_exe_time.count());
 
     publish_metrics(output_metrics);
 }
