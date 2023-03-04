@@ -30,6 +30,11 @@ float size_compressed_test =0;
 float size_original_test =0;
 float points_second = 0;
 
+float store_hw_time = 0;
+float hw_time = 0;
+float read_time = 0;
+float range_encoder = 0;
+
 bool oct_0,oct_1,oct_2,oct_3,oct_4,oct_5,oct_6,oct_7;
 
 pcl::io::OctreePointCloudCompression<pcl::PointXYZRGB>* PointCloudEncoder;
@@ -709,7 +714,7 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud;
 
         //********** START DECODING OCCUPANCY CODE ***************
-
+        auto start_read_rangeEncoder = std::chrono::high_resolution_clock::now();
         PointCloudEncoder->setInputCloud(input_cloud);
         printf("Input Cloud Test Size: %d\n",input_cloud->size());
 
@@ -747,21 +752,27 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         //PointCloudEncoder->setResolution(0.125);
 
         my_write_frame_header_hw(compressed_data);
-        auto start_read_rangeEncoder = std::chrono::high_resolution_clock::now();
+
         PointCloudEncoder->entropyEncoding(compressed_data);
         auto stop_read_rangeEncoder = std::chrono::high_resolution_clock::now();
         PointCloudEncoder->switchBuffers ();
 
 
         auto duration_store_hw = std::chrono::duration_cast<std::chrono::milliseconds>(stop_store_hw - start_store_hw);
-        auto duration_read_hw = std::chrono::duration_cast<std::chrono::microseconds>(stop_read_hw - start_read_hw);
+        auto duration_read_hw = std::chrono::duration_cast<std::chrono::milliseconds>(stop_read_hw - start_read_hw);
         auto duration_octree_hw = std::chrono::duration_cast<std::chrono::milliseconds>(octree_stop_hw - octree_start_hw);
         auto duration_compress = std::chrono::duration_cast<std::chrono::milliseconds>(stop_read_rangeEncoder - start_read_rangeEncoder);
 
         cout << "STORE TIME: " << duration_store_hw.count() << "ms" << endl;
-        cout << "READ TIME: " << duration_read_hw.count() << "us" << endl;
+        cout << "READ TIME: " << duration_read_hw.count() << "ms" << endl;
         cout << "OCTREE + DFS + DDR WRITE TIME: " << duration_octree_hw.count() << "ms" << endl;
         cout << "RANGE ENCODER TIME: " << duration_compress.count() << "ms" << endl;
+
+        store_hw_time = store_hw_time + duration_store_hw.count() ;
+        hw_time = hw_time + duration_octree_hw.count();
+        read_time = read_time + duration_read_hw.count();
+        range_encoder = range_encoder + duration_compress.count();
+
 
         print_statistics_octant(PointCloudEncoder);
 
@@ -852,12 +863,14 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
     size_compressed_test = size_compressed_test+compressed_data.tellg();
     tempos_test = tempos_test + duration_exe_time.count();
     points_second += 1000*input_cloud->points.size() / duration_exe_time.count();
+
     x++;
     if(x==100){
         x=0;
         exe_time();
     }
     points_second += 1000*input_cloud->points.size() / duration_exe_time.count();
+
 
 
     std::cout << "Passed publish_pointcloud " << std::endl;
@@ -1750,6 +1763,10 @@ void Alfa_Pc_Compress::exe_time()
     size_compressed_test = size_compressed_test/100;
     size_original_test = (size_original_test)/100;
     points_second = points_second/100;
+    store_hw_time = store_hw_time/100 ;
+    hw_time = hw_time/100;
+    read_time = read_time/100;
+    range_encoder = range_encoder/100;
     //std::ofstream myFile("./output/exe_time");
     //myFile<< "Exe. Time: "<< tempos_test << std::endl << "Point Cloud Size: "<< size_original_test << std::endl << "Compressed Size: "<<size_compressed_test<< std::endl << "Ratio: " << size_original_test/size_compressed_test << std::endl ;
     //myFile.close();
@@ -1759,11 +1776,18 @@ void Alfa_Pc_Compress::exe_time()
     ROS_INFO("Compressed Size: %f\n", size_compressed_test);
     ROS_INFO("Ratio: %f\n", size_original_test/size_compressed_test);
     ROS_INFO("Points/s: %f\n", points_second);
-
+    ROS_INFO("store_hw_time: %f\n", store_hw_time);
+    ROS_INFO("Hw_Time: %f\n", hw_time);
+    ROS_INFO("read_time: %f\n", read_time);
+    ROS_INFO("range_encoder: %f\n", range_encoder);
     x=0;
     size_compressed_test = 0;
     size_original_test = 0;
     points_second = 0;
+    store_hw_time = 0;
+    hw_time = 0;
+    read_time = 0;
+    range_encoder = 0;
 }
 
 
