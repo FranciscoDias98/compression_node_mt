@@ -730,17 +730,17 @@ void Alfa_Pc_Compress::process_pointcloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
         printf("Object Count %d \n",PointCloudEncoder->object_count_);
 
         switch (depth_test) {
-            case 15: PointCloudEncoder->setResolution(0.03);
+            case 15: PointCloudEncoder->setResolution(0.01);
                 break;
-            case 14: PointCloudEncoder->setResolution(0.06);
+            case 14: PointCloudEncoder->setResolution(0.03);
                 break;
-            case 13: PointCloudEncoder->setResolution(0.125);
+            case 13: PointCloudEncoder->setResolution(0.06);
                 break;
-            case 12: PointCloudEncoder->setResolution(0.25);
+            case 12: PointCloudEncoder->setResolution(0.125);
                 break;
-            case 11: PointCloudEncoder->setResolution(0.5);
+            case 11: PointCloudEncoder->setResolution(0.25);
                 break;
-            case 10: PointCloudEncoder->setResolution(1);
+            case 10: PointCloudEncoder->setResolution(0.5);
 
         }
 
